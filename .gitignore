@@ -1,0 +1,61 @@
+# .gitignore for Gradle + IntelliJ IDEA
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+*.class
+
+# Maven (legacy - 삭제 예정)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Application
+application-local.properties
+application-secret.properties
+.env
+.env.*
+
+# Database
+*.db
+*.sqlite
+
+# QueryDSL
+generated/
+target/generated-sources/
+
+# Spring Boot
+*.pid
+spring.log
