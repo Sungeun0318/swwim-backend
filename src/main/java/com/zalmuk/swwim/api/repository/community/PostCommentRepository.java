@@ -16,11 +16,13 @@ import java.util.UUID;
 @Repository
 public interface PostCommentRepository extends JpaRepository<PostComment, UUID> {
 
-    Page<PostComment> findByPostOrderByCreatedAtDesc(CommunityPost post, Pageable pageable);
+    @Query("SELECT pc FROM PostComment pc JOIN FETCH pc.user JOIN FETCH pc.post WHERE pc.post = :post ORDER BY pc.createdAt DESC")
+    Page<PostComment> findByPostOrderByCreatedAtDesc(@Param("post") CommunityPost post, Pageable pageable);
 
-    Page<PostComment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    @Query("SELECT pc FROM PostComment pc JOIN FETCH pc.user JOIN FETCH pc.post WHERE pc.user = :user ORDER BY pc.createdAt DESC")
+    Page<PostComment> findByUserOrderByCreatedAtDesc(@Param("user") User user, Pageable pageable);
 
-    @Query("SELECT pc FROM PostComment pc WHERE pc.post.id = :postId AND pc.user.id NOT IN :blockedUserIds ORDER BY pc.createdAt DESC")
+    @Query("SELECT pc FROM PostComment pc JOIN FETCH pc.user JOIN FETCH pc.post WHERE pc.post.id = :postId AND pc.user.id NOT IN :blockedUserIds ORDER BY pc.createdAt DESC")
     Page<PostComment> findByPostExcludingBlockedUsers(
             @Param("postId") UUID postId,
             @Param("blockedUserIds") List<String> blockedUserIds,

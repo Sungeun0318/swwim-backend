@@ -16,17 +16,19 @@ import java.util.UUID;
 @Repository
 public interface CommunityPostRepository extends JpaRepository<CommunityPost, UUID> {
 
+    @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user ORDER BY cp.createdAt DESC")
     Page<CommunityPost> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    Page<CommunityPost> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user WHERE cp.user = :user ORDER BY cp.createdAt DESC")
+    Page<CommunityPost> findByUserOrderByCreatedAtDesc(@Param("user") User user, Pageable pageable);
 
-    @Query("SELECT cp FROM CommunityPost cp WHERE LOWER(cp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(cp.content) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY cp.createdAt DESC")
+    @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user WHERE LOWER(cp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(cp.content) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY cp.createdAt DESC")
     Page<CommunityPost> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT cp FROM CommunityPost cp WHERE cp.user.id NOT IN :blockedUserIds ORDER BY cp.createdAt DESC")
+    @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user WHERE cp.user.id NOT IN :blockedUserIds ORDER BY cp.createdAt DESC")
     Page<CommunityPost> findAllExcludingBlockedUsers(@Param("blockedUserIds") List<String> blockedUserIds, Pageable pageable);
 
-    @Query("SELECT cp FROM CommunityPost cp ORDER BY cp.likeCount DESC")
+    @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user ORDER BY cp.likeCount DESC")
     Page<CommunityPost> findTopByLikeCount(Pageable pageable);
 
     @Modifying

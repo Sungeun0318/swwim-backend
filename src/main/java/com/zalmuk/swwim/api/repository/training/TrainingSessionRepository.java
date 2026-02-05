@@ -17,14 +17,16 @@ import java.util.UUID;
 @Repository
 public interface TrainingSessionRepository extends JpaRepository<TrainingSession, UUID> {
 
-    Page<TrainingSession> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    @Query("SELECT ts FROM TrainingSession ts JOIN FETCH ts.user WHERE ts.user = :user ORDER BY ts.createdAt DESC")
+    Page<TrainingSession> findByUserOrderByCreatedAtDesc(@Param("user") User user, Pageable pageable);
 
-    List<TrainingSession> findByUserAndStatus(User user, TrainingStatus status);
+    @Query("SELECT ts FROM TrainingSession ts JOIN FETCH ts.user WHERE ts.user = :user AND ts.status = :status")
+    List<TrainingSession> findByUserAndStatus(@Param("user") User user, @Param("status") TrainingStatus status);
 
-    @Query("SELECT ts FROM TrainingSession ts WHERE ts.user.id = :userId AND ts.isCompleted = true ORDER BY ts.completedAt DESC")
+    @Query("SELECT ts FROM TrainingSession ts JOIN FETCH ts.user WHERE ts.user.id = :userId AND ts.isCompleted = true ORDER BY ts.completedAt DESC")
     Page<TrainingSession> findCompletedByUserId(@Param("userId") String userId, Pageable pageable);
 
-    @Query("SELECT ts FROM TrainingSession ts WHERE ts.user.id = :userId AND ts.createdAt BETWEEN :startDate AND :endDate")
+    @Query("SELECT ts FROM TrainingSession ts JOIN FETCH ts.user WHERE ts.user.id = :userId AND ts.createdAt BETWEEN :startDate AND :endDate")
     List<TrainingSession> findByUserIdAndDateRange(
             @Param("userId") String userId,
             @Param("startDate") LocalDateTime startDate,

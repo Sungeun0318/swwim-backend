@@ -113,9 +113,11 @@ public class TrainingService {
         result = resultRepository.save(result);
 
         // 결과 상세 저장
-        for (TrainingResultDetail detail : details) {
-            detail.setResult(result);
-            resultDetailRepository.save(detail);
+        if (details != null) {
+            for (TrainingResultDetail detail : details) {
+                detail.setResult(result);
+                resultDetailRepository.save(detail);
+            }
         }
 
         // 사용자 통계 업데이트
@@ -135,28 +137,37 @@ public class TrainingService {
     }
 
     private void updateUserStats(String userId, Integer distance, Integer time) {
+        if (distance == null) distance = 0;
+        if (time == null) time = 0;
+        final Integer finalDistance = distance;
+        final Integer finalTime = time;
+
         userStatsRepository.findById(userId).ifPresent(stats -> {
-            stats.setTotalSessions(stats.getTotalSessions() + 1);
-            stats.setTotalDistance(stats.getTotalDistance() + distance);
-            stats.setTotalTime(stats.getTotalTime() + time);
-            stats.setMonthlySessions(stats.getMonthlySessions() + 1);
-            stats.setMonthlyDistance(stats.getMonthlyDistance() + distance);
-            stats.setMonthlyTime(stats.getMonthlyTime() + time);
-            stats.setLastTrainingDate(LocalDate.now());
+            stats.setTotalSessions(safeInt(stats.getTotalSessions()) + 1);
+            stats.setTotalDistance(safeInt(stats.getTotalDistance()) + finalDistance);
+            stats.setTotalTime(safeInt(stats.getTotalTime()) + finalTime);
+            stats.setMonthlySessions(safeInt(stats.getMonthlySessions()) + 1);
+            stats.setMonthlyDistance(safeInt(stats.getMonthlyDistance()) + finalDistance);
+            stats.setMonthlyTime(safeInt(stats.getMonthlyTime()) + finalTime);
 
             // 연속 기록 업데이트
             LocalDate lastDate = stats.getLastTrainingDate();
             if (lastDate != null && lastDate.equals(LocalDate.now().minusDays(1))) {
-                stats.setCurrentStreak(stats.getCurrentStreak() + 1);
+                stats.setCurrentStreak(safeInt(stats.getCurrentStreak()) + 1);
             } else if (lastDate == null || !lastDate.equals(LocalDate.now())) {
                 stats.setCurrentStreak(1);
             }
-            if (stats.getCurrentStreak() > stats.getLongestStreak()) {
+            if (safeInt(stats.getCurrentStreak()) > safeInt(stats.getLongestStreak())) {
                 stats.setLongestStreak(stats.getCurrentStreak());
             }
 
+            stats.setLastTrainingDate(LocalDate.now());
             userStatsRepository.save(stats);
         });
+    }
+
+    private int safeInt(Integer value) {
+        return value != null ? value : 0;
     }
 
     @Transactional
