@@ -27,7 +27,7 @@ public class CalendarService {
     }
 
     public Optional<CalendarEvent> findById(UUID id) {
-        return calendarEventRepository.findById(id);
+        return calendarEventRepository.findByIdWithUser(id);
     }
 
     public Optional<CalendarEvent> findByUserAndDate(String userId, LocalDate date) {
@@ -44,15 +44,54 @@ public class CalendarService {
     }
 
     @Transactional
-    public CalendarEvent createOrUpdateEvent(String userId, LocalDate date, List<Map<String, Object>> trainings) {
+    public CalendarEvent createOrUpdateEvent(String userId, LocalDate date,
+                                              String title, Integer totalDistance, String totalTime,
+                                              List<Map<String, Object>> trainings) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         CalendarEvent event = calendarEventRepository.findByUserAndDate(user, date)
                 .orElse(new CalendarEvent(user, date, trainings));
 
-        event.setTrainings(trainings);
+        if (title != null) event.setTitle(title);
+        if (totalDistance != null) event.setTotalDistance(totalDistance);
+        if (totalTime != null) event.setTotalTime(totalTime);
+        if (trainings != null) event.setTrainings(trainings);
         return calendarEventRepository.save(event);
+    }
+
+    @Transactional
+    public CalendarEvent updateEvent(UUID eventId, String userId,
+                                      String title, Integer totalDistance, String totalTime,
+                                      List<Map<String, Object>> trainings) {
+        CalendarEvent event = calendarEventRepository.findByIdWithUser(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("캘린더 이벤트를 찾을 수 없습니다."));
+
+        if (!event.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("본인의 이벤트만 수정할 수 있습니다.");
+        }
+
+        if (title != null) event.setTitle(title);
+        if (totalDistance != null) event.setTotalDistance(totalDistance);
+        if (totalTime != null) event.setTotalTime(totalTime);
+        if (trainings != null) event.setTrainings(trainings);
+        return calendarEventRepository.save(event);
+    }
+
+    @Transactional
+    public void completeEvent(UUID eventId, String userId) {
+        CalendarEvent event = calendarEventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("캘린더 이벤트를 찾을 수 없습니다."));
+        event.setCompleted(true);
+        calendarEventRepository.save(event);
+    }
+
+    @Transactional
+    public void saveMemo(UUID eventId, String userId, String memo) {
+        CalendarEvent event = calendarEventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("캘린더 이벤트를 찾을 수 없습니다."));
+        event.setMemo(memo);
+        calendarEventRepository.save(event);
     }
 
     @Transactional
@@ -86,5 +125,11 @@ public class CalendarService {
 
     public List<CalendarEvent> getScheduledEvents(LocalDateTime start, LocalDateTime end) {
         return calendarEventRepository.findScheduledEvents(start, end);
+    }
+
+    public List<CalendarEvent> getAllUserEvents(String userId) {
+        LocalDate startDate = LocalDate.of(2020, 1, 1);
+        LocalDate endDate = LocalDate.of(2099, 12, 31);
+        return calendarEventRepository.findByUserIdAndDateRange(userId, startDate, endDate);
     }
 }

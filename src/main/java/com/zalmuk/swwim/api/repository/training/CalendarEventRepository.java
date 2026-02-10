@@ -16,15 +16,19 @@ import java.util.UUID;
 @Repository
 public interface CalendarEventRepository extends JpaRepository<CalendarEvent, UUID> {
 
-    Optional<CalendarEvent> findByUserAndDate(User user, LocalDate date);
+    @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.user = :user AND ce.date = :date")
+    Optional<CalendarEvent> findByUserAndDate(@Param("user") User user, @Param("date") LocalDate date);
 
-    @Query("SELECT ce FROM CalendarEvent ce WHERE ce.user.id = :userId AND ce.date BETWEEN :startDate AND :endDate ORDER BY ce.date ASC")
+    @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.user.id = :userId AND ce.date BETWEEN :startDate AND :endDate ORDER BY ce.date ASC")
     List<CalendarEvent> findByUserIdAndDateRange(
             @Param("userId") String userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT ce FROM CalendarEvent ce WHERE ce.scheduledDateTime IS NOT NULL AND ce.scheduledDateTime BETWEEN :start AND :end")
+    @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.id = :id")
+    Optional<CalendarEvent> findByIdWithUser(@Param("id") UUID id);
+
+    @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.scheduledDateTime IS NOT NULL AND ce.scheduledDateTime BETWEEN :start AND :end")
     List<CalendarEvent> findScheduledEvents(
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);

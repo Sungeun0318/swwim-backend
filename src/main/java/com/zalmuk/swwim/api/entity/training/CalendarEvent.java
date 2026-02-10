@@ -34,9 +34,33 @@ public class CalendarEvent extends BaseEntity {
     @Column(name = "date", nullable = false)
     private LocalDate date;
 
+    @Column(name = "title", length = 200)
+    private String title;
+
+    @Column(name = "total_distance")
+    private Integer totalDistance;
+
+    @Column(name = "total_time", length = 20)
+    private String totalTime;
+
+    @Column(name = "session_id")
+    private String sessionId;
+
+    @Column(name = "completed")
+    private Boolean completed = false;
+
+    @Column(name = "memo", columnDefinition = "text")
+    private String memo;
+
+    @Column(name = "type", length = 50)
+    private String type;
+
+    @Column(name = "difficulty", length = 50)
+    private String difficulty;
+
     // 훈련 데이터 (JSON 배열)
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "trainings", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "trainings", columnDefinition = "jsonb")
     private List<Map<String, Object>> trainings;
 
     // 자동 저장 여부
@@ -122,5 +146,69 @@ public class CalendarEvent extends BaseEntity {
 
     public void setNotify1hourBefore(Boolean notify1hourBefore) {
         this.notify1hourBefore = notify1hourBefore;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Integer getTotalDistance() {
+        return totalDistance;
+    }
+
+    public void setTotalDistance(Integer totalDistance) {
+        this.totalDistance = totalDistance;
+    }
+
+    public String getTotalTime() {
+        return totalTime;
+    }
+
+    public void setTotalTime(String totalTime) {
+        this.totalTime = totalTime;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
     }
 }
