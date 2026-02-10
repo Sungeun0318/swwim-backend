@@ -12,10 +12,14 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface TrainingSessionRepository extends JpaRepository<TrainingSession, UUID> {
+
+    @Query("SELECT ts FROM TrainingSession ts JOIN FETCH ts.user LEFT JOIN FETCH ts.details WHERE ts.id = :id")
+    Optional<TrainingSession> findByIdWithDetails(@Param("id") UUID id);
 
     @Query("SELECT ts FROM TrainingSession ts JOIN FETCH ts.user WHERE ts.user = :user ORDER BY ts.createdAt DESC")
     Page<TrainingSession> findByUserOrderByCreatedAtDesc(@Param("user") User user, Pageable pageable);

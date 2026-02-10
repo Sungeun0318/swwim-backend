@@ -41,7 +41,7 @@ public class CommunityService {
 
     // 게시글 조회
     public Optional<CommunityPost> findPostById(UUID id) {
-        return postRepository.findById(id);
+        return postRepository.findByIdWithUser(id);
     }
 
     public Page<CommunityPost> getAllPosts(Pageable pageable) {

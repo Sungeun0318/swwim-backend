@@ -44,7 +44,7 @@ public class TrainingService {
     }
 
     public Optional<TrainingSession> findSessionById(UUID id) {
-        return sessionRepository.findById(id);
+        return sessionRepository.findByIdWithDetails(id);
     }
 
     public Page<TrainingSession> getUserSessions(String userId, Pageable pageable) {

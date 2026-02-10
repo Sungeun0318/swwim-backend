@@ -51,6 +51,16 @@ public class CommunityController {
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
     }
 
+    @Operation(summary = "내 게시글 목록", description = "내 게시글 목록을 조회합니다.")
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<PageResponse<PostResponse>>> getMyPosts(
+            @AuthenticationPrincipal String userId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<CommunityPost> posts = communityService.getUserPosts(userId, pageable);
+        Page<PostResponse> responses = posts.map(PostResponse::from);
+        return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
+    }
+
     @Operation(summary = "게시글 작성", description = "새 게시글을 작성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<PostResponse>> createPost(

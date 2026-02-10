@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -30,6 +31,9 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, UU
 
     @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user ORDER BY cp.likeCount DESC")
     Page<CommunityPost> findTopByLikeCount(Pageable pageable);
+
+    @Query("SELECT cp FROM CommunityPost cp JOIN FETCH cp.user WHERE cp.id = :id")
+    Optional<CommunityPost> findByIdWithUser(@Param("id") UUID id);
 
     @Modifying
     @Query("UPDATE CommunityPost cp SET cp.viewCount = cp.viewCount + 1 WHERE cp.id = :postId")

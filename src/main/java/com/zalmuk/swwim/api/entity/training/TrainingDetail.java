@@ -37,7 +37,7 @@ public class TrainingDetail extends BaseTimeEntity {
     @Column(name = "rest_time", nullable = false)
     private Integer restTime = 0; // 초
 
-    @Column(name = "interval", nullable = false)
+    @Column(name = "\"interval\"", nullable = false)
     private Integer interval = 5; // 초
 
     @Column(name = "personnel", nullable = false)
