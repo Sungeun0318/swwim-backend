@@ -102,8 +102,14 @@ public class TrainingController {
     public ResponseEntity<ApiResponse<TrainingResultResponse>> completeTraining(
             @AuthenticationPrincipal String userId,
             @PathVariable UUID id,
-            @Valid @RequestBody TrainingCompleteRequest request) {
-        var result = trainingService.completeSession(id, request.getTotalTime(), request.getTotalDistance(), null);
+            @RequestBody(required = false) TrainingCompleteRequest request) {
+        String totalTime = "00:00:00";
+        Integer totalDistance = 0;
+        if (request != null) {
+            totalTime = request.getTotalTimeAsString();
+            if (request.getTotalDistance() != null) totalDistance = request.getTotalDistance();
+        }
+        var result = trainingService.completeSession(id, totalTime, totalDistance, null);
         return ResponseEntity.ok(ApiResponse.success(TrainingResultResponse.from(result), "훈련이 완료되었습니다."));
     }
 

@@ -1,9 +1,6 @@
 package com.zalmuk.swwim.api.dto.training;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 import java.util.List;
 
@@ -13,13 +10,10 @@ import java.util.List;
 @Schema(description = "훈련 완료 요청")
 public class TrainingCompleteRequest {
 
-    @NotBlank(message = "총 시간은 필수입니다")
-    @Schema(description = "총 시간 (HH:mm:ss)", required = true, example = "01:30:00")
-    private String totalTime;
+    @Schema(description = "총 시간 (초)", example = "5400")
+    private Integer totalTime;
 
-    @NotNull(message = "총 거리는 필수입니다")
-    @Positive(message = "총 거리는 0보다 커야 합니다")
-    @Schema(description = "총 거리 (미터)", required = true)
+    @Schema(description = "총 거리 (미터)")
     private Integer totalDistance;
 
     @Schema(description = "상세 결과 목록")
@@ -30,12 +24,23 @@ public class TrainingCompleteRequest {
     }
 
     // Getters and Setters
-    public String getTotalTime() {
+    public Integer getTotalTime() {
         return totalTime;
     }
 
-    public void setTotalTime(String totalTime) {
+    public void setTotalTime(Integer totalTime) {
         this.totalTime = totalTime;
+    }
+
+    /**
+     * 총 시간을 HH:mm:ss 문자열로 변환
+     */
+    public String getTotalTimeAsString() {
+        if (totalTime == null) return "00:00:00";
+        int hours = totalTime / 3600;
+        int minutes = (totalTime % 3600) / 60;
+        int seconds = totalTime % 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
     public Integer getTotalDistance() {

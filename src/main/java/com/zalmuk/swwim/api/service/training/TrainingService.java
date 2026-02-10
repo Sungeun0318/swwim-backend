@@ -77,10 +77,10 @@ public class TrainingService {
                 .orElseThrow(() -> new IllegalArgumentException("훈련 세션을 찾을 수 없습니다."));
 
         TrainingDetail detail = new TrainingDetail(session, title, distance, count, cycle);
-        detail.setRestTime(restTime);
-        detail.setInterval(interval);
-        detail.setPersonnel(personnel);
-        detail.setOrderIndex(orderIndex);
+        detail.setRestTime(restTime != null ? restTime : 0);
+        detail.setInterval(interval != null ? interval : 5);
+        detail.setPersonnel(personnel != null ? personnel : 1);
+        detail.setOrderIndex(orderIndex != null ? orderIndex : 0);
         return detailRepository.save(detail);
     }
 
