@@ -18,5 +18,4 @@ public class SwwimApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(SwwimApiApplication.class, args);
     }
-
 }
