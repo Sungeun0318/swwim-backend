@@ -154,6 +154,26 @@ public class CommunityController {
         return ResponseEntity.ok(ApiResponse.success(null, "댓글이 삭제되었습니다."));
     }
 
+    @Operation(summary = "댓글 좋아요")
+    @PostMapping("/{id}/comments/{commentId}/like")
+    public ResponseEntity<ApiResponse<Void>> likeComment(
+            @AuthenticationPrincipal String userId,
+            @PathVariable UUID id,
+            @PathVariable UUID commentId) {
+        communityService.likeComment(commentId, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "댓글 좋아요를 눌렀습니다."));
+    }
+
+    @Operation(summary = "댓글 좋아요 취소")
+    @DeleteMapping("/{id}/comments/{commentId}/like")
+    public ResponseEntity<ApiResponse<Void>> unlikeComment(
+            @AuthenticationPrincipal String userId,
+            @PathVariable UUID id,
+            @PathVariable UUID commentId) {
+        communityService.unlikeComment(commentId, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "댓글 좋아요를 취소했습니다."));
+    }
+
     @Operation(summary = "인기 게시글", description = "인기 게시글 목록을 조회합니다.")
     @GetMapping("/popular")
     public ResponseEntity<ApiResponse<PageResponse<PostResponse>>> getPopularPosts(
