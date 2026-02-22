@@ -132,4 +132,9 @@ public class CalendarService {
         LocalDate endDate = LocalDate.of(2099, 12, 31);
         return calendarEventRepository.findByUserIdAndDateRange(userId, startDate, endDate);
     }
+
+    @Transactional
+    public CalendarEvent saveEvent(CalendarEvent event) {
+        return calendarEventRepository.save(event);
+    }
 }

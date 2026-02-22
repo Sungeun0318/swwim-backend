@@ -14,9 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,19 +31,22 @@ public class TrainingService {
     private final TrainingResultDetailRepository resultDetailRepository;
     private final UserRepository userRepository;
     private final UserStatsRepository userStatsRepository;
+    private final CalendarService calendarService;
 
     public TrainingService(TrainingSessionRepository sessionRepository,
                            TrainingDetailRepository detailRepository,
                            TrainingResultRepository resultRepository,
                            TrainingResultDetailRepository resultDetailRepository,
                            UserRepository userRepository,
-                           UserStatsRepository userStatsRepository) {
+                           UserStatsRepository userStatsRepository,
+                           CalendarService calendarService) {
         this.sessionRepository = sessionRepository;
         this.detailRepository = detailRepository;
         this.resultRepository = resultRepository;
         this.resultDetailRepository = resultDetailRepository;
         this.userRepository = userRepository;
         this.userStatsRepository = userStatsRepository;
+        this.calendarService = calendarService;
     }
 
     public Optional<TrainingSession> findSessionById(UUID id) {
@@ -122,6 +128,35 @@ public class TrainingService {
 
         // 사용자 통계 업데이트
         updateUserStats(session.getUser().getId(), totalDistance, parseTotalTimeToSeconds(totalTime));
+
+        // 캘린더 이벤트 자동 생성 (완료된 훈련을 캘린더에 기록)
+        try {
+            List<TrainingDetail> sessionDetails = detailRepository.findBySessionOrderByOrderIndexAsc(session);
+            List<Map<String, Object>> calendarTrainings = sessionDetails.stream()
+                    .map(d -> {
+                        Map<String, Object> m = new HashMap<>();
+                        m.put("title", d.getTitle());
+                        m.put("distance", d.getDistance());
+                        m.put("count", d.getCount());
+                        m.put("cycle", d.getCycle());
+                        return m;
+                    })
+                    .collect(Collectors.toList());
+
+            CalendarEvent calendarEvent = calendarService.createOrUpdateEvent(
+                    session.getUser().getId(),
+                    LocalDate.now(),
+                    session.getTitle(),
+                    totalDistance,
+                    totalTime,
+                    calendarTrainings);
+            calendarEvent.setCompleted(true);
+            calendarEvent.setSessionId(session.getId().toString());
+            calendarEvent.setType("training");
+            calendarService.saveEvent(calendarEvent);
+        } catch (Exception ignored) {
+            // 캘린더 저장 실패해도 훈련 완료는 성공으로 처리
+        }
 
         return result;
     }
