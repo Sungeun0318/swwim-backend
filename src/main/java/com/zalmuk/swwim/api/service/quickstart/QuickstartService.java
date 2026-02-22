@@ -169,4 +169,14 @@ public class QuickstartService {
                 .map(user -> achievementRepository.existsByUserAndAchievementTypeAndAchievementName(user, type, name))
                 .orElse(false);
     }
+
+    @Transactional
+    public void deleteProgress(UUID progressId, String userId) {
+        progressRepository.findById(progressId).ifPresent(progress -> {
+            if (!progress.getUser().getId().equals(userId)) {
+                throw new IllegalArgumentException("본인의 퀵스타트 진행만 삭제할 수 있습니다.");
+            }
+            progressRepository.delete(progress);
+        });
+    }
 }

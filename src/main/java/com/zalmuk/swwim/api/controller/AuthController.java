@@ -45,6 +45,14 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response, "회원가입 성공"));
     }
 
+    @Operation(summary = "이메일 로그인", description = "이메일과 비밀번호로 로그인합니다.")
+    @PostMapping("/login/email")
+    public ResponseEntity<ApiResponse<LoginResponse>> loginEmail(
+            @Valid @RequestBody RegisterRequest request) {
+        LoginResponse response = authService.loginWithEmail(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(ApiResponse.success(response, "로그인 성공"));
+    }
+
     @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급받습니다.")
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(

@@ -59,6 +59,10 @@ public class UserSettings extends BaseEntity {
     @Column(name = "show_stats")
     private Boolean showStats = true;
 
+    // FCM 토큰 (푸시 알림)
+    @Column(name = "fcm_token", columnDefinition = "TEXT")
+    private String fcmToken;
+
     // Constructors
     protected UserSettings() {
     }
@@ -160,5 +164,13 @@ public class UserSettings extends BaseEntity {
 
     public void setShowStats(Boolean showStats) {
         this.showStats = showStats;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }

@@ -158,4 +158,26 @@ public class CalendarController {
         calendarService.saveMemo(eventId, userId, body.get("memo"));
         return ResponseEntity.ok(ApiResponse.success(null, "메모가 저장되었습니다."));
     }
+
+    @Operation(summary = "월간 통계 조회")
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMonthlyStats(
+            @AuthenticationPrincipal String userId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth) {
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+        List<CalendarEvent> events = calendarService.getEventsByDateRange(userId, startDate, endDate);
+
+        int totalDays = events.size();
+        long totalDistance = events.stream()
+                .filter(e -> e.getTotalDistance() != null)
+                .mapToLong(CalendarEvent::getTotalDistance)
+                .sum();
+
+        Map<String, Object> stats = Map.of(
+                "totalTrainingDays", totalDays,
+                "totalDistance", totalDistance
+        );
+        return ResponseEntity.ok(ApiResponse.success(stats));
+    }
 }

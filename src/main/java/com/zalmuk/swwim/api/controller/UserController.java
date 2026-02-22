@@ -147,4 +147,30 @@ public class UserController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
+
+    @Operation(summary = "회원 탈퇴", description = "계정을 삭제합니다.")
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(
+            @AuthenticationPrincipal String userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "계정이 삭제되었습니다."));
+    }
+
+    @Operation(summary = "FCM 토큰 업데이트", description = "푸시 알림을 위한 FCM 토큰을 업데이트합니다.")
+    @PostMapping("/me/fcm-token")
+    public ResponseEntity<ApiResponse<Void>> updateFcmToken(
+            @AuthenticationPrincipal String userId,
+            @RequestBody Map<String, String> body) {
+        userService.updateFcmToken(userId, body.get("fcmToken"));
+        return ResponseEntity.ok(ApiResponse.success(null, "FCM 토큰이 업데이트되었습니다."));
+    }
+
+    @Operation(summary = "선택 수영장 업데이트", description = "선호 수영장을 설정합니다.")
+    @PutMapping("/me/selected-pool")
+    public ResponseEntity<ApiResponse<Void>> updateSelectedPool(
+            @AuthenticationPrincipal String userId,
+            @RequestBody Map<String, String> body) {
+        userService.updateSelectedPool(userId, body.get("poolId"));
+        return ResponseEntity.ok(ApiResponse.success(null, "선택 수영장이 업데이트되었습니다."));
+    }
 }

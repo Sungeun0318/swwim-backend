@@ -96,7 +96,27 @@ public class UserService {
 
     @Transactional
     public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setStatus(com.zalmuk.swwim.api.entity.enums.UserStatus.DELETED);
+            user.setDeletionRequestedAt(LocalDateTime.now());
+            userRepository.save(user);
+        });
+    }
+
+    @Transactional
+    public void updateFcmToken(String userId, String fcmToken) {
+        userSettingsRepository.findById(userId).ifPresent(settings -> {
+            settings.setFcmToken(fcmToken);
+            userSettingsRepository.save(settings);
+        });
+    }
+
+    @Transactional
+    public void updateSelectedPool(String userId, String poolId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setSelectedPoolId(poolId);
+            userRepository.save(user);
+        });
     }
 
     public Optional<UserSettings> getSettings(String userId) {

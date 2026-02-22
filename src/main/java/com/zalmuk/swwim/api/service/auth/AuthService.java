@@ -95,7 +95,7 @@ public class AuthService {
         UserStats stats = new UserStats(user);
         user.setStats(stats);
 
-        userRepository.save(user);
+        user = userRepository.save(user);
 
         // 3. JWT 토큰 생성
         String accessToken = jwtTokenProvider.createAccessToken(user);
@@ -111,6 +111,36 @@ public class AuthService {
         response.setExpiresIn(jwtTokenProvider.getRefreshTokenExpiration() / 1000);
         response.setUser(UserResponse.from(user));
         response.setIsNewUser(true);
+
+        return response;
+    }
+
+    /**
+     * 이메일 로그인
+     */
+    @Transactional
+    public LoginResponse loginWithEmail(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
+
+        if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String accessToken = jwtTokenProvider.createAccessToken(user);
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+
+        saveRefreshToken(user, refreshToken, null);
+
+        LoginResponse response = new LoginResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        response.setExpiresIn(jwtTokenProvider.getRefreshTokenExpiration() / 1000);
+        response.setUser(UserResponse.from(user));
+        response.setIsNewUser(false);
 
         return response;
     }
