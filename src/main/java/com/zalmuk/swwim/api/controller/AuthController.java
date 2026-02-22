@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 인증 컨트롤러
  */
@@ -75,5 +77,19 @@ public class AuthController {
             @AuthenticationPrincipal String userId) {
         authService.logoutAll(userId);
         return ResponseEntity.ok(ApiResponse.success(null, "모든 기기에서 로그아웃 되었습니다."));
+    }
+
+    @Operation(summary = "비밀번호 변경", description = "이메일 로그인 사용자의 비밀번호를 변경합니다.")
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal String userId,
+            @RequestBody Map<String, String> body) {
+        try {
+            authService.changePassword(userId, body.get("currentPassword"), body.get("newPassword"));
+            return ResponseEntity.ok(ApiResponse.success(null, "비밀번호가 변경되었습니다."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
     }
 }
