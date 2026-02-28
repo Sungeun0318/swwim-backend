@@ -8,6 +8,7 @@ import com.zalmuk.swwim.api.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -105,8 +106,8 @@ public class NotificationService {
         });
     }
 
-    // 알림 생성 헬퍼 메서드
-    @Transactional
+    // 알림 생성 헬퍼 메서드 - REQUIRES_NEW: 호출자 트랜잭션과 분리, 알림 실패가 본 기능에 영향 없도록
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendFollowNotification(String followerId, String followingId) {
         userRepository.findById(followerId).ifPresent(follower -> {
             String title = "새로운 팔로워";
@@ -115,7 +116,7 @@ public class NotificationService {
         });
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendLikeNotification(String likerId, String postOwnerId, String postId) {
         if (likerId.equals(postOwnerId)) return; // 본인 게시글 좋아요는 알림 안함
 
@@ -126,7 +127,7 @@ public class NotificationService {
         });
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendCommentNotification(String commenterId, String postOwnerId, String postId) {
         if (commenterId.equals(postOwnerId)) return;
 

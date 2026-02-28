@@ -1,5 +1,7 @@
 package com.zalmuk.swwim.api.entity.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * 알림 유형
  */
@@ -16,6 +18,7 @@ public enum NotificationType {
         this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
         return value;
     }

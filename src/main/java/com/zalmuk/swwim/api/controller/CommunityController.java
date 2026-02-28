@@ -20,7 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 커뮤니티 컨트롤러
@@ -47,7 +50,7 @@ public class CommunityController {
         } else {
             posts = communityService.getAllPosts(pageable);
         }
-        Page<PostResponse> responses = posts.map(PostResponse::from);
+        Page<PostResponse> responses = applyIsLiked(posts, userId);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
     }
 
@@ -57,7 +60,7 @@ public class CommunityController {
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20) Pageable pageable) {
         Page<CommunityPost> posts = communityService.getUserPosts(userId, pageable);
-        Page<PostResponse> responses = posts.map(PostResponse::from);
+        Page<PostResponse> responses = applyIsLiked(posts, userId);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
     }
 
@@ -82,6 +85,9 @@ public class CommunityController {
                     if (userId != null && !userId.isEmpty()) {
                         response.setIsLiked(communityService.isPostLiked(id, userId));
                     }
+                    // PostLike 테이블 집계값으로 likeCount 덮어쓰기
+                    java.util.Map<UUID, Integer> counts = communityService.getLikeCounts(List.of(id));
+                    response.setLikeCount(counts.getOrDefault(id, 0));
                     return ResponseEntity.ok(ApiResponse.success(response));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -177,9 +183,10 @@ public class CommunityController {
     @Operation(summary = "인기 게시글", description = "인기 게시글 목록을 조회합니다.")
     @GetMapping("/popular")
     public ResponseEntity<ApiResponse<PageResponse<PostResponse>>> getPopularPosts(
+            @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20) Pageable pageable) {
         Page<CommunityPost> posts = communityService.getPopularPosts(pageable);
-        Page<PostResponse> responses = posts.map(PostResponse::summary);
+        Page<PostResponse> responses = applyIsLiked(posts, userId);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
     }
 
@@ -191,5 +198,21 @@ public class CommunityController {
         Page<CommunityPost> posts = communityService.searchPosts(keyword, pageable);
         Page<PostResponse> responses = posts.map(PostResponse::summary);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
+    }
+
+    /// 게시글 목록에 isLiked + 실제 likeCount(PostLike 기준) 배치 적용 헬퍼
+    private Page<PostResponse> applyIsLiked(Page<CommunityPost> posts, String userId) {
+        List<UUID> postIds = posts.getContent().stream()
+                .map(CommunityPost::getId)
+                .collect(Collectors.toList());
+        Set<UUID> likedIds = communityService.getLikedPostIds(userId, postIds);
+        java.util.Map<UUID, Integer> likeCounts = communityService.getLikeCounts(postIds);
+        return posts.map(post -> {
+            PostResponse r = PostResponse.from(post);
+            r.setIsLiked(likedIds.contains(post.getId()));
+            // PostLike 테이블 집계값으로 덮어쓰기 (denormalized 필드 불일치 방지)
+            r.setLikeCount(likeCounts.getOrDefault(post.getId(), 0));
+            return r;
+        });
     }
 }

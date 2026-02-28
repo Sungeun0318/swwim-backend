@@ -4,6 +4,7 @@ import com.zalmuk.swwim.api.entity.user.User;
 import com.zalmuk.swwim.api.entity.user.UserFollow;
 import com.zalmuk.swwim.api.repository.user.UserFollowRepository;
 import com.zalmuk.swwim.api.repository.user.UserRepository;
+import com.zalmuk.swwim.api.service.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,13 @@ public class FollowService {
 
     private final UserFollowRepository userFollowRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public FollowService(UserFollowRepository userFollowRepository, UserRepository userRepository) {
+    public FollowService(UserFollowRepository userFollowRepository, UserRepository userRepository,
+                         NotificationService notificationService) {
         this.userFollowRepository = userFollowRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public boolean isFollowing(String followerId, String followingId) {
@@ -51,6 +55,9 @@ public class FollowService {
         following.setFollowersCount(following.getFollowersCount() + 1);
         userRepository.save(follower);
         userRepository.save(following);
+
+        // 팔로우 알림 생성
+        notificationService.sendFollowNotification(followerId, followingId);
     }
 
     @Transactional

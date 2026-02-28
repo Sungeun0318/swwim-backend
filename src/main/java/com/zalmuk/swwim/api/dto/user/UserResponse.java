@@ -95,7 +95,9 @@ public class UserResponse {
     public static UserResponse summary(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());
-        response.setNickname(user.getNickname());
+        // nickname이 없으면 name으로 폴백
+        String nickname = user.getNickname();
+        response.setNickname(nickname != null && !nickname.isBlank() ? nickname : user.getName());
         response.setProfileImageUrl(user.getProfileImageUrl());
         response.setLevel(user.getLevel());
         return response;

@@ -39,5 +39,15 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, UU
     @Query("UPDATE CommunityPost cp SET cp.viewCount = cp.viewCount + 1 WHERE cp.id = :postId")
     void incrementViewCount(@Param("postId") UUID postId);
 
+    /// 좋아요 수 원자적 증가 (race condition 방지)
+    @Modifying
+    @Query("UPDATE CommunityPost cp SET cp.likeCount = cp.likeCount + 1 WHERE cp.id = :postId")
+    void incrementLikeCount(@Param("postId") UUID postId);
+
+    /// 좋아요 수 원자적 감소 (0 미만 방지)
+    @Modifying
+    @Query("UPDATE CommunityPost cp SET cp.likeCount = GREATEST(cp.likeCount - 1, 0) WHERE cp.id = :postId")
+    void decrementLikeCount(@Param("postId") UUID postId);
+
     long countByUserId(String userId);
 }
