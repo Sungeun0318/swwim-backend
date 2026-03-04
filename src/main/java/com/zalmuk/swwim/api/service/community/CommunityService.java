@@ -65,8 +65,8 @@ public class CommunityService {
 
     public Page<CommunityPost> getUserPosts(String userId, Pageable pageable) {
         return userRepository.findById(userId)
-                .map(user -> postRepository.findByUserOrderByCreatedAtDesc(user, pageable))
-                .orElse(Page.empty());
+            .map(user -> postRepository.findByUserOrderByCreatedAtDesc(user, pageable))
+            .orElse(Page.empty());
     }
 
     public Page<CommunityPost> searchPosts(String keyword, Pageable pageable) {
@@ -81,7 +81,7 @@ public class CommunityService {
     @Transactional
     public CommunityPost createPost(String userId, String title, String content, String imageUrl) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         CommunityPost post = new CommunityPost(user, title, content);
         post.setImageUrl(imageUrl);
@@ -97,7 +97,7 @@ public class CommunityService {
     @Transactional
     public CommunityPost updatePost(UUID postId, String userId, String title, String content, String imageUrl) {
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         if (!post.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인의 게시글만 수정할 수 있습니다.");
@@ -112,7 +112,7 @@ public class CommunityService {
     @Transactional
     public void deletePost(UUID postId, String userId) {
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         if (!post.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인의 게시글만 삭제할 수 있습니다.");
@@ -133,9 +133,15 @@ public class CommunityService {
     // 좋아요
     public boolean isPostLiked(UUID postId, String userId) {
         return postRepository.findById(postId)
-                .flatMap(post -> userRepository.findById(userId)
-                        .map(user -> postLikeRepository.existsByPostAndUser(post, user)))
-                .orElse(false);
+            .flatMap(post -> userRepository.findById(userId)
+                .map(user -> postLikeRepository.existsByPostAndUser(post, user)))
+            .orElse(false);
+    }
+
+    /// 여러 댓글에 대해 사용자가 좋아요한 ID 목록 배치 조회 (N+1 방지)
+    public Set<UUID> getLikedCommentIds(String userId, List<UUID> commentIds) {
+        if (userId == null || commentIds == null || commentIds.isEmpty()) return Set.of();
+        return commentLikeRepository.findLikedCommentIds(userId, commentIds);
     }
 
     /// 여러 게시글에 대해 사용자가 좋아요한 ID 목록 배치 조회 (N+1 방지)
@@ -164,9 +170,9 @@ public class CommunityService {
         if (alreadyLiked) return; // 이미 좋아요한 경우 무시
 
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         PostLike like = new PostLike(post, user);
         postLikeRepository.save(like);
@@ -186,9 +192,9 @@ public class CommunityService {
         if (!liked) return; // 좋아요 없으면 무시
 
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         postLikeRepository.findByPostAndUser(post, user).ifPresent(like -> {
             postLikeRepository.delete(like);
@@ -200,16 +206,16 @@ public class CommunityService {
     // 댓글
     public Page<PostComment> getComments(UUID postId, Pageable pageable) {
         return postRepository.findById(postId)
-                .map(post -> commentRepository.findByPostOrderByCreatedAtDesc(post, pageable))
-                .orElse(Page.empty());
+            .map(post -> commentRepository.findByPostOrderByCreatedAtDesc(post, pageable))
+            .orElse(Page.empty());
     }
 
     @Transactional
     public PostComment createComment(UUID postId, String userId, String text) {
         CommunityPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         PostComment comment = new PostComment(post, user, text);
         comment = commentRepository.save(comment);
@@ -228,7 +234,7 @@ public class CommunityService {
     @Transactional
     public void deleteComment(UUID commentId, String userId) {
         PostComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
         if (!comment.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인의 댓글만 삭제할 수 있습니다.");
@@ -245,9 +251,9 @@ public class CommunityService {
     @Transactional
     public void likeComment(UUID commentId, String userId) {
         PostComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (!commentLikeRepository.existsByCommentAndUser(comment, user)) {
             CommentLike like = new CommentLike(comment, user);
@@ -260,9 +266,9 @@ public class CommunityService {
     @Transactional
     public void unlikeComment(UUID commentId, String userId) {
         PostComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         commentLikeRepository.findByCommentAndUser(comment, user).ifPresent(like -> {
             commentLikeRepository.delete(like);
