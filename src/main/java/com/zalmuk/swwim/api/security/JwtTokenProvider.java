@@ -42,6 +42,8 @@ public class JwtTokenProvider {
                 .claim("email", user.getEmail())
                 .claim("nickname", user.getNickname())
                 .claim("isAdmin", user.getIsAdmin())
+                .claim("role", Boolean.TRUE.equals(user.getIsAdmin()) ? "ADMIN" : "USER")
+                .claim("isPremium", user.getIsPremium())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)

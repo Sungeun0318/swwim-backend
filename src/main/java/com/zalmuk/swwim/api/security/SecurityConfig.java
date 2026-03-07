@@ -57,7 +57,8 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    "/swagger-resources/**"
+                    "/swagger-resources/**",
+                    "/api/v1/webhooks/**"
                 ).permitAll()
 
                 // 관리자 전용 엔드포인트

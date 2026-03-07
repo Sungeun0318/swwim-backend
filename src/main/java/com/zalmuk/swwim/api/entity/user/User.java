@@ -4,6 +4,7 @@ import com.zalmuk.swwim.api.entity.BaseEntity;
 import com.zalmuk.swwim.api.entity.enums.AuthProvider;
 import com.zalmuk.swwim.api.entity.enums.SubscriptionType;
 import com.zalmuk.swwim.api.entity.enums.UserLevel;
+import com.zalmuk.swwim.api.entity.enums.UserRole;
 import com.zalmuk.swwim.api.entity.enums.UserStatus;
 import jakarta.persistence.*;
 
@@ -93,7 +94,12 @@ public class User extends BaseEntity {
     @Column(name = "subscription_type", length = 20)
     private SubscriptionType subscriptionType;
 
-    // 관리자 플래그
+    // 역할 (USER, ADMIN)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20)
+    private UserRole role = UserRole.USER;
+
+    // 관리자 플래그 (하위 호환)
     @Column(name = "is_admin")
     private Boolean isAdmin = false;
 
@@ -295,12 +301,22 @@ public class User extends BaseEntity {
         this.subscriptionType = subscriptionType;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+        this.isAdmin = (role == UserRole.ADMIN);
+    }
+
     public Boolean getIsAdmin() {
         return isAdmin;
     }
 
     public void setIsAdmin(Boolean isAdmin) {
         this.isAdmin = isAdmin;
+        this.role = Boolean.TRUE.equals(isAdmin) ? UserRole.ADMIN : UserRole.USER;
     }
 
     public UserStatus getStatus() {
