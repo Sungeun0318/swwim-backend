@@ -86,12 +86,14 @@ public class CalendarController {
 
     @Operation(summary = "특정 날짜 이벤트 조회")
     @GetMapping("/{date}")
-    public ResponseEntity<ApiResponse<CalendarEventResponse>> getEventByDate(
+    public ResponseEntity<ApiResponse<List<CalendarEventResponse>>> getEventsByDate(
             @AuthenticationPrincipal String userId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return calendarService.findByUserAndDate(userId, date)
-                .map(event -> ResponseEntity.ok(ApiResponse.success(CalendarEventResponse.from(event))))
-                .orElse(ResponseEntity.ok(ApiResponse.success(null)));
+        List<CalendarEvent> events = calendarService.findAllByUserAndDate(userId, date);
+        List<CalendarEventResponse> responses = events.stream()
+                .map(CalendarEventResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
     @Operation(summary = "이벤트 생성/수정")
@@ -100,10 +102,12 @@ public class CalendarController {
             @AuthenticationPrincipal String userId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @Valid @RequestBody CalendarEventRequest request) {
-        CalendarEvent event = calendarService.createOrUpdateEvent(
+        CalendarEvent event = calendarService.createEvent(
                 userId, date,
                 request.getTitle(), request.getTotalDistance(), request.getTotalTime(),
-                request.getTrainings());
+                request.getTrainings(), request.getScheduledDateTime(),
+                request.getNotify30minBefore(), request.getNotify1hourBefore(),
+                request.getType(), request.getMemo());
         return ResponseEntity.ok(ApiResponse.success(CalendarEventResponse.from(event), "이벤트가 저장되었습니다."));
     }
 

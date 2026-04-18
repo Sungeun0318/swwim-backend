@@ -52,6 +52,15 @@ public class PostResponse {
     @Schema(description = "좋아요 여부 (로그인 사용자)")
     private Boolean isLiked;
 
+    @Schema(description = "저장 여부 (로그인 사용자)")
+    private Boolean isSaved;
+
+    @Schema(description = "공유 타입 (예: training)")
+    private String shareType;
+
+    @Schema(description = "훈련 데이터 JSON 문자열")
+    private String trainingData;
+
     // Constructors
     public PostResponse() {
     }
@@ -70,6 +79,8 @@ public class PostResponse {
         response.setShareUrl(post.getShareUrl());
         response.setCreatedAt(post.getCreatedAt());
         response.setUpdatedAt(post.getUpdatedAt());
+        response.setShareType(post.getShareType());
+        response.setTrainingData(post.getTrainingData());
         return response;
     }
 
@@ -186,5 +197,29 @@ public class PostResponse {
 
     public void setIsLiked(Boolean isLiked) {
         this.isLiked = isLiked;
+    }
+
+    public String getShareType() {
+        return shareType;
+    }
+
+    public void setShareType(String shareType) {
+        this.shareType = shareType;
+    }
+
+    public String getTrainingData() {
+        return trainingData;
+    }
+
+    public void setTrainingData(String trainingData) {
+        this.trainingData = trainingData;
+    }
+
+    public Boolean getIsSaved() {
+        return isSaved;
+    }
+
+    public void setIsSaved(Boolean isSaved) {
+        this.isSaved = isSaved;
     }
 }

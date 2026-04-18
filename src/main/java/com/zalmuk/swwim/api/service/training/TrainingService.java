@@ -143,16 +143,16 @@ public class TrainingService {
                     })
                     .collect(Collectors.toList());
 
-            CalendarEvent calendarEvent = calendarService.createOrUpdateEvent(
+            CalendarEvent calendarEvent = calendarService.createEvent(
                     session.getUser().getId(),
                     LocalDate.now(),
                     session.getTitle(),
                     totalDistance,
                     totalTime,
-                    calendarTrainings);
+                    calendarTrainings,
+                    null, null, null, "training", null);
             calendarEvent.setCompleted(true);
             calendarEvent.setSessionId(session.getId().toString());
-            calendarEvent.setType("training");
             calendarService.saveEvent(calendarEvent);
         } catch (Exception ignored) {
             // 캘린더 저장 실패해도 훈련 완료는 성공으로 처리

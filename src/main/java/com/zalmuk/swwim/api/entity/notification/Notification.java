@@ -35,6 +35,10 @@ public class Notification extends BaseTimeEntity {
     @Column(name = "body", nullable = false, columnDefinition = "TEXT")
     private String body;
 
+    // 발신자 정보
+    @Column(name = "sender_id", length = 128)
+    private String senderId; // 알림을 발생시킨 사용자의 ID
+
     // 관련 데이터
     @Column(name = "related_id")
     private String relatedId; // 관련 게시글/사용자 등의 ID
@@ -114,6 +118,14 @@ public class Notification extends BaseTimeEntity {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
     }
 
     public String getRelatedId() {

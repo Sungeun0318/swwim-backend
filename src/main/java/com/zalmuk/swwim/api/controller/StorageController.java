@@ -35,7 +35,7 @@ public class StorageController {
 
         return ResponseEntity.ok(ApiResponse.success(Map.of(
                 "uploadUrl", presignedUrl,
-                "publicUrl", publicUrl
+                "downloadUrl", publicUrl
         )));
     }
 
@@ -51,7 +51,7 @@ public class StorageController {
 
         return ResponseEntity.ok(ApiResponse.success(Map.of(
                 "uploadUrl", presignedUrl,
-                "publicUrl", publicUrl
+                "downloadUrl", publicUrl
         )));
     }
 }

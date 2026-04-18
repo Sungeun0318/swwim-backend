@@ -79,8 +79,13 @@ public class WebhookController {
                     break;
 
                 case "EXPIRATION":
-                case "BILLING_ISSUE":
                     handleExpiration(appUserId, event);
+                    break;
+
+                case "BILLING_ISSUE":
+                    // 유예 기간(Grace Period) 중 — premium 유지, 로그만 기록
+                    // EXPIRATION이 오면 그때 취소됨
+                    log.warn("[Webhook] 결제 실패 (유예 기간 유지): userId={}", appUserId);
                     break;
 
                 case "CANCELLATION":

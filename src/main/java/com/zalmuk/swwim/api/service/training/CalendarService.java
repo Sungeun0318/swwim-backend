@@ -35,6 +35,12 @@ public class CalendarService {
                 .flatMap(user -> calendarEventRepository.findByUserAndDate(user, date));
     }
 
+    public List<CalendarEvent> findAllByUserAndDate(String userId, LocalDate date) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return calendarEventRepository.findAllByUserAndDate(user, date);
+    }
+
     public List<CalendarEvent> getEventsByDateRange(String userId, LocalDate startDate, LocalDate endDate) {
         return calendarEventRepository.findByUserIdAndDateRange(userId, startDate, endDate);
     }
@@ -44,19 +50,24 @@ public class CalendarService {
     }
 
     @Transactional
-    public CalendarEvent createOrUpdateEvent(String userId, LocalDate date,
-                                              String title, Integer totalDistance, String totalTime,
-                                              List<Map<String, Object>> trainings) {
+    public CalendarEvent createEvent(String userId, LocalDate date,
+                                      String title, Integer totalDistance, String totalTime,
+                                      List<Map<String, Object>> trainings,
+                                      LocalDateTime scheduledDateTime,
+                                      Boolean notify30minBefore, Boolean notify1hourBefore,
+                                      String type, String memo) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        CalendarEvent event = calendarEventRepository.findByUserAndDate(user, date)
-                .orElse(new CalendarEvent(user, date, trainings));
-
+        CalendarEvent event = new CalendarEvent(user, date, trainings);
         if (title != null) event.setTitle(title);
         if (totalDistance != null) event.setTotalDistance(totalDistance);
         if (totalTime != null) event.setTotalTime(totalTime);
-        if (trainings != null) event.setTrainings(trainings);
+        if (scheduledDateTime != null) event.setScheduledDateTime(scheduledDateTime);
+        if (notify30minBefore != null) event.setNotify30minBefore(notify30minBefore);
+        if (notify1hourBefore != null) event.setNotify1hourBefore(notify1hourBefore);
+        if (type != null) event.setType(type);
+        if (memo != null) event.setMemo(memo);
         return calendarEventRepository.save(event);
     }
 

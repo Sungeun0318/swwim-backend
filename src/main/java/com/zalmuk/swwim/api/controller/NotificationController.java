@@ -6,7 +6,6 @@ import com.zalmuk.swwim.api.dto.notification.NotificationResponse;
 import com.zalmuk.swwim.api.entity.notification.Notification;
 import com.zalmuk.swwim.api.service.notification.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +36,7 @@ public class NotificationController {
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20) Pageable pageable) {
         Page<Notification> notifications = notificationService.getUserNotifications(userId, pageable);
-        Page<NotificationResponse> responses = notifications.map(NotificationResponse::from);
+        Page<NotificationResponse> responses = notifications.map(notificationService::toResponseWithSenderInfo);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
     }
 
@@ -81,7 +80,7 @@ public class NotificationController {
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20) Pageable pageable) {
         Page<Notification> notifications = notificationService.getUnreadNotifications(userId, pageable);
-        Page<NotificationResponse> responses = notifications.map(NotificationResponse::from);
+        Page<NotificationResponse> responses = notifications.map(notificationService::toResponseWithSenderInfo);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.of(responses)));
     }
 }

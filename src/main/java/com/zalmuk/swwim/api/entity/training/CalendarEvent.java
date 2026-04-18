@@ -17,7 +17,6 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "calendar_events",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "date"}),
         indexes = {
                 @Index(name = "idx_calendar_events_user_date", columnList = "user_id, date DESC")
         })

@@ -1,5 +1,6 @@
 package com.zalmuk.swwim.api.service.notification;
 
+import com.zalmuk.swwim.api.dto.notification.NotificationResponse;
 import com.zalmuk.swwim.api.entity.enums.NotificationType;
 import com.zalmuk.swwim.api.entity.notification.Notification;
 import com.zalmuk.swwim.api.entity.user.User;
@@ -50,12 +51,21 @@ public class NotificationService {
     public Notification createNotification(String userId, NotificationType type,
                                             String title, String body,
                                             String relatedId, String actionUrl) {
+        return createNotification(userId, type, title, body, relatedId, actionUrl, null);
+    }
+
+    @Transactional
+    public Notification createNotification(String userId, NotificationType type,
+                                            String title, String body,
+                                            String relatedId, String actionUrl,
+                                            String senderId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Notification notification = new Notification(user, type, title, body);
         notification.setRelatedId(relatedId);
         notification.setActionUrl(actionUrl);
+        notification.setSenderId(senderId);
         return notificationRepository.save(notification);
     }
 
@@ -106,13 +116,30 @@ public class NotificationService {
         });
     }
 
+    /**
+     * Notification을 NotificationResponse로 변환하면서 발신자 프로필 정보를 채운다.
+     */
+    public NotificationResponse toResponseWithSenderInfo(Notification notification) {
+        NotificationResponse response = NotificationResponse.from(notification);
+
+        String senderId = notification.getSenderId();
+        if (senderId != null) {
+            userRepository.findById(senderId).ifPresent(sender -> {
+                response.setSenderProfileImageUrl(sender.getProfileImageUrl());
+                response.setSenderNickname(sender.getNickname());
+            });
+        }
+
+        return response;
+    }
+
     // 알림 생성 헬퍼 메서드 - REQUIRES_NEW: 호출자 트랜잭션과 분리, 알림 실패가 본 기능에 영향 없도록
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendFollowNotification(String followerId, String followingId) {
         userRepository.findById(followerId).ifPresent(follower -> {
             String title = "새로운 팔로워";
             String body = follower.getNickname() + "님이 회원님을 팔로우했습니다.";
-            createNotification(followingId, NotificationType.FOLLOW, title, body, followerId, null);
+            createNotification(followingId, NotificationType.FOLLOW, title, body, followerId, null, followerId);
         });
     }
 
@@ -123,7 +150,7 @@ public class NotificationService {
         userRepository.findById(likerId).ifPresent(liker -> {
             String title = "좋아요";
             String body = liker.getNickname() + "님이 게시글을 좋아합니다.";
-            createNotification(postOwnerId, NotificationType.LIKE, title, body, postId, null);
+            createNotification(postOwnerId, NotificationType.LIKE, title, body, postId, null, likerId);
         });
     }
 
@@ -134,7 +161,7 @@ public class NotificationService {
         userRepository.findById(commenterId).ifPresent(commenter -> {
             String title = "새 댓글";
             String body = commenter.getNickname() + "님이 댓글을 남겼습니다.";
-            createNotification(postOwnerId, NotificationType.COMMENT, title, body, postId, null);
+            createNotification(postOwnerId, NotificationType.COMMENT, title, body, postId, null, commenterId);
         });
     }
 }

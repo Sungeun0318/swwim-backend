@@ -40,6 +40,15 @@ public class NotificationResponse {
     @Schema(description = "생성 시간")
     private LocalDateTime createdAt;
 
+    @Schema(description = "발신자 ID")
+    private String senderId;
+
+    @Schema(description = "발신자 프로필 이미지 URL")
+    private String senderProfileImageUrl;
+
+    @Schema(description = "발신자 닉네임")
+    private String senderNickname;
+
     // Constructors
     public NotificationResponse() {
     }
@@ -55,6 +64,7 @@ public class NotificationResponse {
         response.setIsRead(notification.getIsRead());
         response.setReadAt(notification.getReadAt());
         response.setCreatedAt(notification.getCreatedAt());
+        response.setSenderId(notification.getSenderId());
         return response;
     }
 
@@ -129,5 +139,29 @@ public class NotificationResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
+    }
+
+    public String getSenderProfileImageUrl() {
+        return senderProfileImageUrl;
+    }
+
+    public void setSenderProfileImageUrl(String senderProfileImageUrl) {
+        this.senderProfileImageUrl = senderProfileImageUrl;
+    }
+
+    public String getSenderNickname() {
+        return senderNickname;
+    }
+
+    public void setSenderNickname(String senderNickname) {
+        this.senderNickname = senderNickname;
     }
 }

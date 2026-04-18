@@ -30,6 +30,9 @@ public class UserResponse {
     @Schema(description = "프로필 이미지 URL")
     private String profileImageUrl;
 
+    @Schema(description = "프로필 이미지 URL (별칭)")
+    private String avatarUrl;
+
     @Schema(description = "자기소개")
     private String bio;
 
@@ -77,6 +80,7 @@ public class UserResponse {
         response.setName(user.getName());
         response.setNickname(user.getNickname());
         response.setProfileImageUrl(user.getProfileImageUrl());
+        response.setAvatarUrl(user.getProfileImageUrl());
         response.setBio(user.getBio());
         response.setLevel(user.getLevel());
         response.setSwimStyle(user.getSwimStyle());
@@ -99,6 +103,7 @@ public class UserResponse {
         String nickname = user.getNickname();
         response.setNickname(nickname != null && !nickname.isBlank() ? nickname : user.getName());
         response.setProfileImageUrl(user.getProfileImageUrl());
+        response.setAvatarUrl(user.getProfileImageUrl());
         response.setLevel(user.getLevel());
         return response;
     }
@@ -142,6 +147,14 @@ public class UserResponse {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public String getBio() {
