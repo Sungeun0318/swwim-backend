@@ -46,27 +46,41 @@ public class AuthService {
         OAuthUserInfo userInfo = oAuthService.verifyToken(request.getProvider(), request.getIdToken());
 
         // 2. 사용자 조회 또는 생성
-        User user = userRepository.findById(userInfo.getId())
-                .orElseGet(() -> createUser(userInfo));
+        // 이메일로 먼저 조회 (가장 확실한 식별자) → 없으면 provider ID로 조회 → 없으면 새로 생성
+        User user = userRepository.findByEmail(userInfo.getEmail())
+                .map(existingUser -> {
+                    // 기존 유저 → provider 정보 업데이트 (다른 provider로 가입했어도 동일 이메일이면 연동)
+                    log.info("기존 유저({})가 {}로 로그인, provider 연동", existingUser.getEmail(), userInfo.getProvider());
+                    existingUser.setProvider(userInfo.getProvider());
+                    existingUser.setProviderId(userInfo.getProviderId());
+                    return existingUser;
+                })
+                .orElseGet(() -> userRepository.findById(userInfo.getId())
+                        .orElseGet(() -> createUser(userInfo)));
 
         // 3. 마지막 로그인 시간 업데이트
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
-        // 4. JWT 토큰 생성
+        // 4. 기존 Refresh Token 모두 무효화 (중복 토큰 방지)
+        refreshTokenRepository.revokeAllByUser(user);
+
+        // 5. JWT 토큰 생성
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken();
 
-        // 5. Refresh Token 저장
+        // 6. Refresh Token 저장
         saveRefreshToken(user, refreshToken, request.getDeviceInfo());
 
-        // 6. 응답 생성
+        // 7. 응답 생성
         LoginResponse response = new LoginResponse();
         response.setAccessToken(accessToken);
         response.setRefreshToken(refreshToken);
         response.setExpiresIn(jwtTokenProvider.getRefreshTokenExpiration() / 1000); // 초 단위
         response.setUser(UserResponse.from(user));
         response.setIsNewUser(user.getNickname() == null); // 닉네임이 없으면 신규 사용자
+
+        log.info("로그인 성공: userId={}, provider={}, isNewUser={}", user.getId(), user.getProvider(), response.getIsNewUser());
 
         return response;
     }
@@ -130,6 +144,9 @@ public class AuthService {
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
+        // 기존 Refresh Token 모두 무효화
+        refreshTokenRepository.revokeAllByUser(user);
+
         String accessToken = jwtTokenProvider.createAccessToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken();
 
@@ -141,6 +158,8 @@ public class AuthService {
         response.setExpiresIn(jwtTokenProvider.getRefreshTokenExpiration() / 1000);
         response.setUser(UserResponse.from(user));
         response.setIsNewUser(false);
+
+        log.info("이메일 로그인 성공: userId={}", user.getId());
 
         return response;
     }

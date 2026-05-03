@@ -57,6 +57,9 @@ public class UserResponse {
     @Schema(description = "프리미엄 여부")
     private Boolean isPremium;
 
+    @Schema(description = "관리자 여부")
+    private Boolean isAdmin;
+
     @Schema(description = "구독 타입")
     private SubscriptionType subscriptionType;
 
@@ -89,6 +92,7 @@ public class UserResponse {
         response.setPostCount(user.getPostCount());
         response.setProvider(user.getProvider());
         response.setIsPremium(user.getIsPremium());
+        response.setIsAdmin(user.getIsAdmin());
         response.setSubscriptionType(user.getSubscriptionType());
         response.setStatus(user.getStatus());
         response.setLastLoginAt(user.getLastLoginAt());
@@ -219,6 +223,14 @@ public class UserResponse {
 
     public void setIsPremium(Boolean isPremium) {
         this.isPremium = isPremium;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
     public SubscriptionType getSubscriptionType() {

@@ -57,17 +57,28 @@ public class WebhookController {
             @SuppressWarnings("unchecked")
             Map<String, Object> event = (Map<String, Object>) payload.get("event");
             if (event == null) {
-                log.warn("[Webhook] event 필드 없음");
+                log.warn("[Webhook] event 필드 없음. payload={}", payload);
                 return ResponseEntity.ok(Map.of("success", true));
             }
 
             String eventType = (String) event.get("type");
             String appUserId = (String) event.get("app_user_id");
+            String environment = (String) event.get("environment"); // SANDBOX or PRODUCTION
+            String store = (String) event.get("store");              // APP_STORE / PLAY_STORE
+            String productId = (String) event.get("product_id");
+            String eventId = (String) event.get("id");
 
-            log.info("[Webhook] RevenueCat 이벤트: type={}, userId={}", eventType, appUserId);
+            log.info("[Webhook] RevenueCat 이벤트 수신: type={}, env={}, store={}, " +
+                            "productId={}, userId={}, eventId={}",
+                    eventType, environment, store, productId, appUserId, eventId);
+
+            // SANDBOX 환경 이벤트는 명확히 표시
+            if ("SANDBOX".equals(environment)) {
+                log.info("[Webhook] 🧪 SANDBOX 환경 이벤트 처리 중");
+            }
 
             if (appUserId == null || appUserId.startsWith("$RCAnonymousID:")) {
-                log.warn("[Webhook] 유효하지 않은 userId: {}", appUserId);
+                log.warn("[Webhook] 유효하지 않은 userId (익명): {}", appUserId);
                 return ResponseEntity.ok(Map.of("success", true));
             }
 
@@ -79,13 +90,8 @@ public class WebhookController {
                     break;
 
                 case "EXPIRATION":
-                    handleExpiration(appUserId, event);
-                    break;
-
                 case "BILLING_ISSUE":
-                    // 유예 기간(Grace Period) 중 — premium 유지, 로그만 기록
-                    // EXPIRATION이 오면 그때 취소됨
-                    log.warn("[Webhook] 결제 실패 (유예 기간 유지): userId={}", appUserId);
+                    handleExpiration(appUserId, event);
                     break;
 
                 case "CANCELLATION":
@@ -97,8 +103,13 @@ public class WebhookController {
                     handlePurchaseOrRenewal(appUserId, event);
                     break;
 
+                case "TEST":
+                    // RevenueCat 대시보드의 "Send Test Event" 버튼으로 발생
+                    log.info("[Webhook] ✅ TEST 이벤트 수신 — webhook 연결 정상");
+                    break;
+
                 default:
-                    log.info("[Webhook] 처리하지 않는 이벤트: {}", eventType);
+                    log.info("[Webhook] 처리하지 않는 이벤트: {} (userId={})", eventType, appUserId);
                     break;
             }
 
@@ -117,20 +128,21 @@ public class WebhookController {
     private void handlePurchaseOrRenewal(String userId, Map<String, Object> event) {
         try {
             LocalDateTime expiresAt = parseExpirationDate(event);
+            String productId = (String) event.get("product_id");
+            String environment = (String) event.get("environment");
 
             // entitlement 목록에서 premium 확인
             @SuppressWarnings("unchecked")
             List<String> entitlementIds = (List<String>) event.get("entitlement_ids");
-            if (entitlementIds != null && entitlementIds.contains("premium")) {
-                entitlementService.grantFromRevenueCat(userId, EntitlementService.PREMIUM, expiresAt);
-                log.info("[Webhook] premium 부여: userId={}, expiresAt={}", userId, expiresAt);
-            } else {
-                // entitlement_ids가 없어도 구매 이벤트면 premium 부여
-                entitlementService.grantFromRevenueCat(userId, EntitlementService.PREMIUM, expiresAt);
-                log.info("[Webhook] premium 부여 (기본): userId={}, expiresAt={}", userId, expiresAt);
-            }
+
+            entitlementService.grantFromRevenueCat(userId, EntitlementService.PREMIUM, expiresAt);
+            log.info("[Webhook] ✅ premium 부여: userId={}, productId={}, expiresAt={}, " +
+                            "env={}, entitlement_ids={}",
+                    userId, productId, expiresAt, environment, entitlementIds);
         } catch (IllegalArgumentException e) {
-            log.warn("[Webhook] 사용자 없음: userId={}", userId);
+            log.warn("[Webhook] ❌ 사용자 없음: userId={}", userId);
+        } catch (Exception e) {
+            log.error("[Webhook] ❌ premium 부여 실패: userId={}, error={}", userId, e.getMessage(), e);
         }
     }
 
@@ -139,8 +151,11 @@ public class WebhookController {
      */
     private void handleExpiration(String userId, Map<String, Object> event) {
         try {
+            String productId = (String) event.get("product_id");
+            String environment = (String) event.get("environment");
             entitlementService.revokeEntitlement(userId, EntitlementService.PREMIUM);
-            log.info("[Webhook] premium 취소: userId={}", userId);
+            log.info("[Webhook] 🚫 premium 취소: userId={}, productId={}, env={}",
+                    userId, productId, environment);
         } catch (Exception e) {
             log.warn("[Webhook] premium 취소 실패: userId={}, error={}", userId, e.getMessage());
         }

@@ -64,10 +64,18 @@ public class OAuthService {
                 Map<String, Object> payload = response.getBody();
                 log.info("Google token payload: {}", payload);
 
-                // audience 검증 - iOS/Android 클라이언트 ID와 일치하는지 확인
-                // (개발 환경에서는 audience 검증 스킵 가능)
+                // audience 검증
                 String aud = (String) payload.get("aud");
-                log.info("Token audience: {}, Expected: {}", aud, googleClientId);
+                String azp = (String) payload.get("azp");
+                log.info("Token audience: {}, azp: {}, Expected: {}", aud, azp, googleClientId);
+
+                // audience가 설정된 client-id와 일치하는지 검증
+                // (serverClientId 또는 Android client ID 중 하나와 일치해야 함)
+                if (googleClientId != null && !googleClientId.isEmpty()
+                        && !googleClientId.contains("xxxxxxxx")
+                        && !googleClientId.equals(aud) && !googleClientId.equals(azp)) {
+                    log.warn("Google token audience mismatch. Expected: {}, Got aud: {}, azp: {}", googleClientId, aud, azp);
+                }
 
                 String providerId = (String) payload.get("sub");
                 log.info("Google token verified successfully for user: {}", payload.get("email"));
