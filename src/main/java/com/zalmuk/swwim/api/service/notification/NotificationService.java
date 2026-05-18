@@ -8,6 +8,7 @@ import com.zalmuk.swwim.api.repository.notification.NotificationRepository;
 import com.zalmuk.swwim.api.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,8 +83,11 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsRead(UUID notificationId) {
+    public void markAsRead(UUID notificationId, String userId) {
         notificationRepository.findById(notificationId).ifPresent(notification -> {
+            if (!notification.getUser().getId().equals(userId)) {
+                throw new AccessDeniedException("본인의 알림만 읽음 처리할 수 있습니다.");
+            }
             notification.markAsRead();
             notificationRepository.save(notification);
         });
@@ -98,7 +102,7 @@ public class NotificationService {
     public void deleteNotification(UUID notificationId, String userId) {
         notificationRepository.findById(notificationId).ifPresent(notification -> {
             if (!notification.getUser().getId().equals(userId)) {
-                throw new IllegalArgumentException("본인의 알림만 삭제할 수 있습니다.");
+                throw new AccessDeniedException("본인의 알림만 삭제할 수 있습니다.");
             }
             notificationRepository.delete(notification);
         });

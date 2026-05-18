@@ -5,6 +5,7 @@ import com.zalmuk.swwim.api.entity.enums.ProfileVisibility;
 import com.zalmuk.swwim.api.entity.enums.ThemeMode;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -29,6 +30,33 @@ public class UserSettings extends BaseEntity {
 
     @Column(name = "enable_training_reminders")
     private Boolean enableTrainingReminders = true;
+
+    @Column(name = "notify_like")
+    private Boolean notifyLike = true;
+
+    @Column(name = "notify_comment")
+    private Boolean notifyComment = true;
+
+    @Column(name = "notify_follow")
+    private Boolean notifyFollow = true;
+
+    @Column(name = "notify_achievement")
+    private Boolean notifyAchievement = true;
+
+    @Column(name = "notify_system")
+    private Boolean notifySystem = true;
+
+    @Column(name = "notify_marketing")
+    private Boolean notifyMarketing = false;
+
+    @Column(name = "marketing_agreed_at")
+    private LocalDateTime marketingAgreedAt;
+
+    @Column(name = "quiet_hours_start")
+    private LocalTime quietHoursStart;
+
+    @Column(name = "quiet_hours_end")
+    private LocalTime quietHoursEnd;
 
     @Column(name = "reminder_time")
     private LocalTime reminderTime = LocalTime.of(9, 0);
@@ -59,7 +87,7 @@ public class UserSettings extends BaseEntity {
     @Column(name = "show_stats")
     private Boolean showStats = true;
 
-    // FCM 토큰 (푸시 알림)
+    // Deprecated: user_push_tokens 테이블로 이관. 다음 단계까지 하위 호환을 위해 유지.
     @Column(name = "fcm_token", columnDefinition = "TEXT")
     private String fcmToken;
 
@@ -100,6 +128,78 @@ public class UserSettings extends BaseEntity {
 
     public void setEnableTrainingReminders(Boolean enableTrainingReminders) {
         this.enableTrainingReminders = enableTrainingReminders;
+    }
+
+    public Boolean getNotifyLike() {
+        return notifyLike;
+    }
+
+    public void setNotifyLike(Boolean notifyLike) {
+        this.notifyLike = notifyLike;
+    }
+
+    public Boolean getNotifyComment() {
+        return notifyComment;
+    }
+
+    public void setNotifyComment(Boolean notifyComment) {
+        this.notifyComment = notifyComment;
+    }
+
+    public Boolean getNotifyFollow() {
+        return notifyFollow;
+    }
+
+    public void setNotifyFollow(Boolean notifyFollow) {
+        this.notifyFollow = notifyFollow;
+    }
+
+    public Boolean getNotifyAchievement() {
+        return notifyAchievement;
+    }
+
+    public void setNotifyAchievement(Boolean notifyAchievement) {
+        this.notifyAchievement = notifyAchievement;
+    }
+
+    public Boolean getNotifySystem() {
+        return notifySystem;
+    }
+
+    public void setNotifySystem(Boolean notifySystem) {
+        this.notifySystem = true;
+    }
+
+    public Boolean getNotifyMarketing() {
+        return notifyMarketing;
+    }
+
+    public void setNotifyMarketing(Boolean notifyMarketing) {
+        this.notifyMarketing = notifyMarketing;
+    }
+
+    public LocalDateTime getMarketingAgreedAt() {
+        return marketingAgreedAt;
+    }
+
+    public void setMarketingAgreedAt(LocalDateTime marketingAgreedAt) {
+        this.marketingAgreedAt = marketingAgreedAt;
+    }
+
+    public LocalTime getQuietHoursStart() {
+        return quietHoursStart;
+    }
+
+    public void setQuietHoursStart(LocalTime quietHoursStart) {
+        this.quietHoursStart = quietHoursStart;
+    }
+
+    public LocalTime getQuietHoursEnd() {
+        return quietHoursEnd;
+    }
+
+    public void setQuietHoursEnd(LocalTime quietHoursEnd) {
+        this.quietHoursEnd = quietHoursEnd;
     }
 
     public LocalTime getReminderTime() {

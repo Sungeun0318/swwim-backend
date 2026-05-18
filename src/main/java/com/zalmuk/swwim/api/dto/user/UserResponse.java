@@ -5,8 +5,10 @@ import com.zalmuk.swwim.api.entity.enums.SubscriptionType;
 import com.zalmuk.swwim.api.entity.enums.UserLevel;
 import com.zalmuk.swwim.api.entity.enums.UserStatus;
 import com.zalmuk.swwim.api.entity.user.User;
+import com.zalmuk.swwim.api.entity.user.UserStats;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -51,6 +53,12 @@ public class UserResponse {
     @Schema(description = "게시글 수")
     private Integer postCount;
 
+    @Schema(description = "현재 유효한 연속 출석 일수")
+    private Integer streakDays;
+
+    @Schema(description = "연속 출석 칭호")
+    private String streakTitle;
+
     @Schema(description = "인증 제공자")
     private AuthProvider provider;
 
@@ -90,6 +98,7 @@ public class UserResponse {
         response.setFollowersCount(user.getFollowersCount());
         response.setFollowingCount(user.getFollowingCount());
         response.setPostCount(user.getPostCount());
+        response.setStreakFields(user.getStats());
         response.setProvider(user.getProvider());
         response.setIsPremium(user.getIsPremium());
         response.setIsAdmin(user.getIsAdmin());
@@ -207,6 +216,51 @@ public class UserResponse {
 
     public void setPostCount(Integer postCount) {
         this.postCount = postCount;
+    }
+
+    public Integer getStreakDays() {
+        return streakDays;
+    }
+
+    public void setStreakDays(Integer streakDays) {
+        this.streakDays = streakDays;
+    }
+
+    public String getStreakTitle() {
+        return streakTitle;
+    }
+
+    public void setStreakTitle(String streakTitle) {
+        this.streakTitle = streakTitle;
+    }
+
+    private void setStreakFields(UserStats stats) {
+        int days = calculateActiveStreak(stats);
+        this.streakDays = days;
+        this.streakTitle = titleForStreak(days);
+    }
+
+    private static int calculateActiveStreak(UserStats stats) {
+        if (stats == null || stats.getLastTrainingDate() == null || stats.getCurrentStreak() == null) {
+            return 0;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate lastTrainingDate = stats.getLastTrainingDate();
+        if (lastTrainingDate.equals(today) || lastTrainingDate.equals(today.minusDays(1))) {
+            return Math.max(stats.getCurrentStreak(), 0);
+        }
+        return 0;
+    }
+
+    private static String titleForStreak(int days) {
+        if (days >= 100) return "수영 레전드";
+        if (days >= 30) return "루틴 마스터";
+        if (days >= 14) return "꾸준한 수영인";
+        if (days >= 7) return "일주일 완주자";
+        if (days >= 3) return "흐름을 탄 수영인";
+        if (days >= 1) return "오늘의 수영인";
+        return "첫 훈련을 시작해보세요";
     }
 
     public AuthProvider getProvider() {

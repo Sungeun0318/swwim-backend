@@ -4,6 +4,7 @@ import com.zalmuk.swwim.api.entity.enums.ProfileVisibility;
 import com.zalmuk.swwim.api.entity.enums.ThemeMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -18,6 +19,33 @@ public class UserSettingsRequest {
 
     @Schema(description = "훈련 리마인더 활성화")
     private Boolean enableTrainingReminders;
+
+    @Schema(description = "좋아요 알림 활성화")
+    private Boolean notifyLike;
+
+    @Schema(description = "댓글 알림 활성화")
+    private Boolean notifyComment;
+
+    @Schema(description = "팔로우 알림 활성화")
+    private Boolean notifyFollow;
+
+    @Schema(description = "업적 알림 활성화")
+    private Boolean notifyAchievement;
+
+    @Schema(description = "시스템 알림 활성화. 서버에서 항상 true로 강제합니다.")
+    private Boolean notifySystem;
+
+    @Schema(description = "마케팅 알림 활성화")
+    private Boolean notifyMarketing;
+
+    @Schema(description = "마케팅 수신 동의 시각")
+    private LocalDateTime marketingAgreedAt;
+
+    @Schema(description = "방해 금지 시작 시각")
+    private LocalTime quietHoursStart;
+
+    @Schema(description = "방해 금지 종료 시각")
+    private LocalTime quietHoursEnd;
 
     @Schema(description = "리마인더 시간")
     private LocalTime reminderTime;
@@ -65,6 +93,78 @@ public class UserSettingsRequest {
 
     public void setEnableTrainingReminders(Boolean enableTrainingReminders) {
         this.enableTrainingReminders = enableTrainingReminders;
+    }
+
+    public Boolean getNotifyLike() {
+        return notifyLike;
+    }
+
+    public void setNotifyLike(Boolean notifyLike) {
+        this.notifyLike = notifyLike;
+    }
+
+    public Boolean getNotifyComment() {
+        return notifyComment;
+    }
+
+    public void setNotifyComment(Boolean notifyComment) {
+        this.notifyComment = notifyComment;
+    }
+
+    public Boolean getNotifyFollow() {
+        return notifyFollow;
+    }
+
+    public void setNotifyFollow(Boolean notifyFollow) {
+        this.notifyFollow = notifyFollow;
+    }
+
+    public Boolean getNotifyAchievement() {
+        return notifyAchievement;
+    }
+
+    public void setNotifyAchievement(Boolean notifyAchievement) {
+        this.notifyAchievement = notifyAchievement;
+    }
+
+    public Boolean getNotifySystem() {
+        return notifySystem;
+    }
+
+    public void setNotifySystem(Boolean notifySystem) {
+        this.notifySystem = notifySystem;
+    }
+
+    public Boolean getNotifyMarketing() {
+        return notifyMarketing;
+    }
+
+    public void setNotifyMarketing(Boolean notifyMarketing) {
+        this.notifyMarketing = notifyMarketing;
+    }
+
+    public LocalDateTime getMarketingAgreedAt() {
+        return marketingAgreedAt;
+    }
+
+    public void setMarketingAgreedAt(LocalDateTime marketingAgreedAt) {
+        this.marketingAgreedAt = marketingAgreedAt;
+    }
+
+    public LocalTime getQuietHoursStart() {
+        return quietHoursStart;
+    }
+
+    public void setQuietHoursStart(LocalTime quietHoursStart) {
+        this.quietHoursStart = quietHoursStart;
+    }
+
+    public LocalTime getQuietHoursEnd() {
+        return quietHoursEnd;
+    }
+
+    public void setQuietHoursEnd(LocalTime quietHoursEnd) {
+        this.quietHoursEnd = quietHoursEnd;
     }
 
     public LocalTime getReminderTime() {

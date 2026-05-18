@@ -159,6 +159,7 @@ public class UserService {
         exec("DELETE FROM pool_reviews WHERE user_id = :uid", userId);
         exec("DELETE FROM saved_pools WHERE user_id = :uid", userId);
         exec("DELETE FROM notifications WHERE user_id = :uid", userId);
+        exec("DELETE FROM user_push_tokens WHERE user_id = :uid", userId);
         exec("DELETE FROM user_entitlements WHERE user_id = :uid", userId);
         exec("DELETE FROM deletion_requests WHERE user_id = :uid", userId);
         exec("DELETE FROM refresh_tokens WHERE user_id = :uid", userId);

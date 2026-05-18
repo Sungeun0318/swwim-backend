@@ -53,7 +53,7 @@ public class NotificationController {
     public ResponseEntity<ApiResponse<Void>> markAsRead(
             @AuthenticationPrincipal String userId,
             @PathVariable UUID id) {
-        notificationService.markAsRead(id);
+        notificationService.markAsRead(id, userId);
         return ResponseEntity.ok(ApiResponse.success(null, "읽음 처리되었습니다."));
     }
 

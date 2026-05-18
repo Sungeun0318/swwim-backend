@@ -97,6 +97,23 @@ public class UserController {
                         settings.setEnablePushNotifications(request.getEnablePushNotifications());
                     if (request.getEnableTrainingReminders() != null)
                         settings.setEnableTrainingReminders(request.getEnableTrainingReminders());
+                    if (request.getNotifyLike() != null)
+                        settings.setNotifyLike(request.getNotifyLike());
+                    if (request.getNotifyComment() != null)
+                        settings.setNotifyComment(request.getNotifyComment());
+                    if (request.getNotifyFollow() != null)
+                        settings.setNotifyFollow(request.getNotifyFollow());
+                    if (request.getNotifyAchievement() != null)
+                        settings.setNotifyAchievement(request.getNotifyAchievement());
+                    settings.setNotifySystem(true);
+                    if (request.getNotifyMarketing() != null)
+                        settings.setNotifyMarketing(request.getNotifyMarketing());
+                    if (request.getMarketingAgreedAt() != null)
+                        settings.setMarketingAgreedAt(request.getMarketingAgreedAt());
+                    if (request.getQuietHoursStart() != null)
+                        settings.setQuietHoursStart(request.getQuietHoursStart());
+                    if (request.getQuietHoursEnd() != null)
+                        settings.setQuietHoursEnd(request.getQuietHoursEnd());
                     if (request.getReminderTime() != null)
                         settings.setReminderTime(request.getReminderTime());
                     if (request.getTheme() != null)
