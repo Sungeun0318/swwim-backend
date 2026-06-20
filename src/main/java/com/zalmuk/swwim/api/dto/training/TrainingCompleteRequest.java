@@ -2,6 +2,7 @@ package com.zalmuk.swwim.api.dto.training;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -18,6 +19,12 @@ public class TrainingCompleteRequest {
 
     @Schema(description = "상세 결과 목록")
     private List<TrainingResultDetailRequest> details;
+
+    @Schema(description = "훈련 시작 시각 (UTC epoch millis)")
+    private Long startedAtEpochMs;
+
+    @Schema(description = "훈련 종료 시각 (UTC epoch millis)")
+    private Long endedAtEpochMs;
 
     // Constructors
     public TrainingCompleteRequest() {
@@ -57,6 +64,30 @@ public class TrainingCompleteRequest {
 
     public void setDetails(List<TrainingResultDetailRequest> details) {
         this.details = details;
+    }
+
+    public Long getStartedAtEpochMs() {
+        return startedAtEpochMs;
+    }
+
+    public void setStartedAtEpochMs(Long startedAtEpochMs) {
+        this.startedAtEpochMs = startedAtEpochMs;
+    }
+
+    public Long getEndedAtEpochMs() {
+        return endedAtEpochMs;
+    }
+
+    public void setEndedAtEpochMs(Long endedAtEpochMs) {
+        this.endedAtEpochMs = endedAtEpochMs;
+    }
+
+    public Instant getStartedAt() {
+        return startedAtEpochMs != null ? Instant.ofEpochMilli(startedAtEpochMs) : null;
+    }
+
+    public Instant getEndedAt() {
+        return endedAtEpochMs != null ? Instant.ofEpochMilli(endedAtEpochMs) : null;
     }
 
     /**

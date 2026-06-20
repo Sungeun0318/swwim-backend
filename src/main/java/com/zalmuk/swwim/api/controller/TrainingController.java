@@ -109,7 +109,13 @@ public class TrainingController {
             totalTime = request.getTotalTimeAsString();
             if (request.getTotalDistance() != null) totalDistance = request.getTotalDistance();
         }
-        var result = trainingService.completeSession(id, totalTime, totalDistance, null);
+        var result = trainingService.completeSession(
+                id,
+                totalTime,
+                totalDistance,
+                null,
+                request != null ? request.getStartedAt() : null,
+                request != null ? request.getEndedAt() : null);
         return ResponseEntity.ok(ApiResponse.success(TrainingResultResponse.from(result), "훈련이 완료되었습니다."));
     }
 

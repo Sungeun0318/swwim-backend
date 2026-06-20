@@ -107,7 +107,7 @@ public class CalendarController {
                 request.getTitle(), request.getTotalDistance(), request.getTotalTime(),
                 request.getTrainings(), request.getScheduledDateTime(),
                 request.getNotify30minBefore(), request.getNotify1hourBefore(),
-                request.getType(), request.getMemo());
+                request.getType(), request.getMemo(), request.getSessionId());
         return ResponseEntity.ok(ApiResponse.success(CalendarEventResponse.from(event), "이벤트가 저장되었습니다."));
     }
 

@@ -21,6 +21,9 @@ public class CalendarEventRequest {
     @Schema(description = "총 시간")
     private String totalTime;
 
+    @Schema(description = "연결된 훈련 세션 ID")
+    private String sessionId;
+
     @Schema(description = "훈련 데이터 목록")
     private List<Map<String, Object>> trainings;
 
@@ -54,6 +57,8 @@ public class CalendarEventRequest {
     public void setTotalDistance(Integer totalDistance) { this.totalDistance = totalDistance; }
     public String getTotalTime() { return totalTime; }
     public void setTotalTime(String totalTime) { this.totalTime = totalTime; }
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
     public List<Map<String, Object>> getTrainings() { return trainings; }
     public void setTrainings(List<Map<String, Object>> trainings) { this.trainings = trainings; }
     public Boolean getAutoSaved() { return autoSaved; }

@@ -3,6 +3,7 @@ package com.zalmuk.swwim.api.dto.calendar;
 import com.zalmuk.swwim.api.entity.training.CalendarEvent;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +23,8 @@ public class CalendarEventResponse {
     private Integer totalDistance;
     private String totalTime;
     private String sessionId;
+    private Instant startedAt;
+    private Instant endedAt;
     private Boolean completed;
     private String memo;
     private String type;
@@ -46,6 +49,8 @@ public class CalendarEventResponse {
         response.setTotalDistance(event.getTotalDistance());
         response.setTotalTime(event.getTotalTime());
         response.setSessionId(event.getSessionId());
+        response.setStartedAt(event.getStartedAt());
+        response.setEndedAt(event.getEndedAt());
         response.setCompleted(event.getCompleted());
         response.setMemo(event.getMemo());
         response.setType(event.getType());
@@ -75,6 +80,10 @@ public class CalendarEventResponse {
     public void setTotalTime(String totalTime) { this.totalTime = totalTime; }
     public String getSessionId() { return sessionId; }
     public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+    public Instant getStartedAt() { return startedAt; }
+    public void setStartedAt(Instant startedAt) { this.startedAt = startedAt; }
+    public Instant getEndedAt() { return endedAt; }
+    public void setEndedAt(Instant endedAt) { this.endedAt = endedAt; }
     public Boolean getCompleted() { return completed; }
     public void setCompleted(Boolean completed) { this.completed = completed; }
     public String getMemo() { return memo; }

@@ -1,6 +1,6 @@
 -- ============================================================
 -- WATCH_MIGRATION.sql  (EC2에서 수동 실행 → 그다음 JAR 배포)
--- 관련 기획: swwim/WATCH_INTEGRATION_PLAN.md , 함정: swwim/WATCH_INTEGRATION_PITFALLS.md
+-- 관련 기획: swwim/WATCH_INTEGRATION_PLAN.md , 함정/교훈: swwim/LESSONS.md
 -- 규칙: ddl-auto=validate 이므로 "SQL 먼저, JAR 나중" (CLAUDE.md / INV-6)
 -- 모든 문장은 멱등(IF EXISTS / IF NOT EXISTS)하게 작성 — 재실행해도 안전.
 -- ⚠️ postgresql_schema.sql 은 STALE. 운영 DB는 JPA 엔티티 기준이다(이미 session_id 등 존재).
@@ -26,7 +26,7 @@ BEGIN
   JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = ANY(con.conkey)
   WHERE con.conrelid = 'calendar_events'::regclass AND con.contype = 'u'
   GROUP BY con.conname
-  HAVING array_agg(a.attname ORDER BY a.attname) = ARRAY['date','user_id'];
+  HAVING array_agg(a.attname::text ORDER BY a.attname::text) = ARRAY['date','user_id'];
   IF c IS NOT NULL THEN
     EXECUTE format('ALTER TABLE calendar_events DROP CONSTRAINT %I', c);
     RAISE NOTICE 'dropped stale unique constraint: %', c;

@@ -22,6 +22,9 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, UU
     @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.user = :user AND ce.date = :date ORDER BY ce.createdAt ASC")
     List<CalendarEvent> findAllByUserAndDate(@Param("user") User user, @Param("date") LocalDate date);
 
+    @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.user = :user AND ce.sessionId = :sessionId")
+    Optional<CalendarEvent> findByUserAndSessionId(@Param("user") User user, @Param("sessionId") String sessionId);
+
     @Query("SELECT ce FROM CalendarEvent ce JOIN FETCH ce.user WHERE ce.user.id = :userId AND ce.date BETWEEN :startDate AND :endDate ORDER BY ce.date ASC")
     List<CalendarEvent> findByUserIdAndDateRange(
             @Param("userId") String userId,

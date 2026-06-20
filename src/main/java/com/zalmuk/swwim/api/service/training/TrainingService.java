@@ -12,8 +12,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 public class TrainingService {
+
+    private static final ZoneId SERVICE_ZONE = ZoneId.of("Asia/Seoul");
 
     private final TrainingSessionRepository sessionRepository;
     private final TrainingDetailRepository detailRepository;
@@ -104,18 +108,30 @@ public class TrainingService {
 
     @Transactional
     public TrainingResult completeSession(UUID sessionId, String totalTime, Integer totalDistance,
-                                           List<TrainingResultDetail> details) {
+                                           List<TrainingResultDetail> details,
+                                           Instant startedAt, Instant endedAt) {
         TrainingSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("훈련 세션을 찾을 수 없습니다."));
+
+        boolean firstCompletion = session.getStatus() != TrainingStatus.COMPLETED;
+        Instant effectiveStartedAt = startedAt != null ? startedAt : session.getStartedAt();
+        Instant effectiveEndedAt = endedAt != null ? endedAt : session.getEndedAt();
+        if (effectiveEndedAt == null) effectiveEndedAt = Instant.now();
 
         // 세션 완료 처리
         session.setStatus(TrainingStatus.COMPLETED);
         session.setIsCompleted(true);
         session.setCompletedAt(LocalDateTime.now());
+        session.setStartedAt(effectiveStartedAt);
+        session.setEndedAt(effectiveEndedAt);
         sessionRepository.save(session);
 
-        // 결과 저장
-        TrainingResult result = new TrainingResult(session.getUser(), session, totalTime, totalDistance);
+        // 결과 저장: 같은 세션 재완료는 기존 결과를 갱신한다.
+        TrainingResult result = resultRepository.findBySession(session)
+                .orElseGet(() -> new TrainingResult(session.getUser(), session, totalTime, totalDistance));
+        result.setTotalTime(totalTime);
+        result.setTotalDistance(totalDistance);
+        result.setCompletedAt(LocalDateTime.now());
         result = resultRepository.save(result);
 
         // 결과 상세 저장
@@ -126,10 +142,12 @@ public class TrainingService {
             }
         }
 
-        // 사용자 통계 업데이트
-        updateUserStats(session.getUser().getId(), totalDistance, parseTotalTimeToSeconds(totalTime));
+        // 사용자 통계 업데이트: 최초 완료에서만 집계한다.
+        if (firstCompletion) {
+            updateUserStats(session.getUser().getId(), totalDistance, parseTotalTimeToSeconds(totalTime));
+        }
 
-        // 캘린더 이벤트 자동 생성 (완료된 훈련을 캘린더에 기록)
+        // 캘린더 이벤트 자동 생성/갱신 (sessionId 기준 멱등)
         try {
             List<TrainingDetail> sessionDetails = detailRepository.findBySessionOrderByOrderIndexAsc(session);
             List<Map<String, Object>> calendarTrainings = sessionDetails.stream()
@@ -143,16 +161,33 @@ public class TrainingService {
                     })
                     .collect(Collectors.toList());
 
-            CalendarEvent calendarEvent = calendarService.createEvent(
-                    session.getUser().getId(),
-                    LocalDate.now(),
-                    session.getTitle(),
-                    totalDistance,
-                    totalTime,
-                    calendarTrainings,
-                    null, null, null, "training", null);
+            String calendarSessionId = session.getId().toString();
+            LocalDate eventDate = effectiveStartedAt != null
+                    ? LocalDateTime.ofInstant(effectiveStartedAt, SERVICE_ZONE).toLocalDate()
+                    : LocalDate.now(SERVICE_ZONE);
+            CalendarEvent calendarEvent = calendarService.findByUserAndSessionId(session.getUser(), calendarSessionId)
+                    .orElseGet(() -> {
+                        CalendarEvent event = calendarService.createEvent(
+                                session.getUser().getId(),
+                                eventDate,
+                                session.getTitle(),
+                                totalDistance,
+                                totalTime,
+                                calendarTrainings,
+                                null, null, null, "training", null);
+                        event.setSessionId(calendarSessionId);
+                        return event;
+                    });
+            calendarEvent.setDate(eventDate);
+            calendarEvent.setTitle(session.getTitle());
+            calendarEvent.setTotalDistance(totalDistance);
+            calendarEvent.setTotalTime(totalTime);
+            calendarEvent.setTrainings(calendarTrainings);
+            calendarEvent.setType("training");
             calendarEvent.setCompleted(true);
-            calendarEvent.setSessionId(session.getId().toString());
+            calendarEvent.setAutoSaved(true);
+            calendarEvent.setStartedAt(effectiveStartedAt);
+            calendarEvent.setEndedAt(effectiveEndedAt);
             calendarService.saveEvent(calendarEvent);
         } catch (Exception ignored) {
             // 캘린더 저장 실패해도 훈련 완료는 성공으로 처리

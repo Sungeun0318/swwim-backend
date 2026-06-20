@@ -35,6 +35,10 @@ public class CalendarService {
                 .flatMap(user -> calendarEventRepository.findByUserAndDate(user, date));
     }
 
+    public Optional<CalendarEvent> findByUserAndSessionId(User user, String sessionId) {
+        return calendarEventRepository.findByUserAndSessionId(user, sessionId);
+    }
+
     public List<CalendarEvent> findAllByUserAndDate(String userId, LocalDate date) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -56,6 +60,17 @@ public class CalendarService {
                                       LocalDateTime scheduledDateTime,
                                       Boolean notify30minBefore, Boolean notify1hourBefore,
                                       String type, String memo) {
+        return createEvent(userId, date, title, totalDistance, totalTime, trainings,
+                scheduledDateTime, notify30minBefore, notify1hourBefore, type, memo, null);
+    }
+
+    @Transactional
+    public CalendarEvent createEvent(String userId, LocalDate date,
+                                      String title, Integer totalDistance, String totalTime,
+                                      List<Map<String, Object>> trainings,
+                                      LocalDateTime scheduledDateTime,
+                                      Boolean notify30minBefore, Boolean notify1hourBefore,
+                                      String type, String memo, String sessionId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -68,6 +83,7 @@ public class CalendarService {
         if (notify1hourBefore != null) event.setNotify1hourBefore(notify1hourBefore);
         if (type != null) event.setType(type);
         if (memo != null) event.setMemo(memo);
+        if (sessionId != null && !sessionId.isBlank()) event.setSessionId(sessionId);
         return calendarEventRepository.save(event);
     }
 
