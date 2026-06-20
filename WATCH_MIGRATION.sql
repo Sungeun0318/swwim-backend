@@ -67,22 +67,58 @@ CREATE INDEX IF NOT EXISTS idx_calendar_events_session
 -- ============================================================
 -- [Phase 1-B] watch_workouts (참고 — 1-B 착수 시 실행, 지금은 미실행)
 -- ============================================================
--- CREATE TABLE IF NOT EXISTS watch_workouts (
---   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---   user_id VARCHAR(128) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
---   calendar_event_id UUID REFERENCES calendar_events(id) ON DELETE SET NULL,  -- INV-3
---   source VARCHAR(20) NOT NULL,            -- APPLE_HEALTH | HEALTH_CONNECT
---   external_id VARCHAR(255) NOT NULL,      -- HealthKit UUID / Health Connect recordId
---   workout_type VARCHAR(30),               -- SWIMMING_POOL | SWIMMING_OPEN_WATER | SWIMMING_UNKNOWN | UNKNOWN
---   started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, total_duration INT,
---   total_distance INT, avg_pace_sec_per_100m DOUBLE PRECISION, avg_speed DOUBLE PRECISION,
---   active_calories INT, avg_heart_rate INT, max_heart_rate INT, stroke_count INT,
---   swolf INT, stroke_style VARCHAR(30),
---   heart_rate_samples JSONB, laps JSONB, gps_route JSONB, raw JSONB,
---   match_confidence DOUBLE PRECISION, matched_manually BOOLEAN DEFAULT FALSE,
---   created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(),
---   UNIQUE (user_id, external_id)           -- 중복 업로드 방지
--- );
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS watch_workouts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id VARCHAR(128) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  calendar_event_id UUID REFERENCES calendar_events(id) ON DELETE SET NULL,  -- INV-3
+  source VARCHAR(20) NOT NULL,            -- APPLE_HEALTH | HEALTH_CONNECT
+  external_id VARCHAR(255) NOT NULL,      -- HealthKit UUID / Health Connect recordId
+  workout_type VARCHAR(30),               -- SWIMMING_POOL | SWIMMING_OPEN_WATER | SWIMMING_UNKNOWN | UNKNOWN
+  started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, total_duration INT,
+  total_distance INT, avg_pace_sec_per_100m DOUBLE PRECISION, avg_speed DOUBLE PRECISION,
+  active_calories INT, avg_heart_rate INT, max_heart_rate INT, stroke_count INT,
+  swolf INT, stroke_style VARCHAR(30),
+  heart_rate_samples JSONB, laps JSONB, gps_route JSONB, raw JSONB,
+  match_confidence DOUBLE PRECISION, matched_manually BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT uk_watch_workouts_user_external UNIQUE (user_id, external_id) -- 중복 업로드 방지
+);
+
+DO $$
+DECLARE c text;
+BEGIN
+  FOR c IN
+    SELECT con.conname
+    FROM pg_constraint con
+    JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = ANY(con.conkey)
+    WHERE con.conrelid = 'watch_workouts'::regclass
+      AND con.contype = 'u'
+    GROUP BY con.conname
+    HAVING array_agg(a.attname::text ORDER BY a.attname::text) = ARRAY['external_id','user_id']
+       AND con.conname <> 'uk_watch_workouts_user_external'
+  LOOP
+    EXECUTE format('ALTER TABLE watch_workouts DROP CONSTRAINT %I', c);
+    RAISE NOTICE 'dropped duplicate watch_workouts unique constraint: %', c;
+  END LOOP;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'watch_workouts'::regclass
+      AND contype = 'u'
+      AND conname = 'uk_watch_workouts_user_external'
+  ) THEN
+    ALTER TABLE watch_workouts
+      ADD CONSTRAINT uk_watch_workouts_user_external UNIQUE (user_id, external_id);
+  END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_watch_workouts_user_external
+  ON watch_workouts (user_id, external_id);
+
+CREATE INDEX IF NOT EXISTS idx_watch_workouts_calendar_event
+  ON watch_workouts (calendar_event_id);
 -- -- calendar_events 요약 스칼라(1-C 표시용)
 -- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS avg_heart_rate INT;
 -- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS max_heart_rate INT;

@@ -3,8 +3,10 @@ package com.zalmuk.swwim.api.controller;
 import com.zalmuk.swwim.api.dto.calendar.CalendarEventRequest;
 import com.zalmuk.swwim.api.dto.calendar.CalendarEventResponse;
 import com.zalmuk.swwim.api.dto.common.ApiResponse;
+import com.zalmuk.swwim.api.dto.watch.WatchWorkoutResponse;
 import com.zalmuk.swwim.api.entity.training.CalendarEvent;
 import com.zalmuk.swwim.api.service.training.CalendarService;
+import com.zalmuk.swwim.api.service.training.WatchWorkoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,9 +32,11 @@ import java.util.stream.Collectors;
 public class CalendarController {
 
     private final CalendarService calendarService;
+    private final WatchWorkoutService watchWorkoutService;
 
-    public CalendarController(CalendarService calendarService) {
+    public CalendarController(CalendarService calendarService, WatchWorkoutService watchWorkoutService) {
         this.calendarService = calendarService;
+        this.watchWorkoutService = watchWorkoutService;
     }
 
     @Operation(summary = "월간 이벤트 조회")
@@ -161,6 +165,16 @@ public class CalendarController {
             @RequestBody Map<String, String> body) {
         calendarService.saveMemo(eventId, userId, body.get("memo"));
         return ResponseEntity.ok(ApiResponse.success(null, "메모가 저장되었습니다."));
+    }
+
+    @Operation(summary = "캘린더 이벤트에 연결된 워치 운동 기록 조회")
+    @GetMapping("/{eventId}/watch-workout")
+    public ResponseEntity<ApiResponse<WatchWorkoutResponse>> getWatchWorkout(
+            @AuthenticationPrincipal String userId,
+            @PathVariable UUID eventId) {
+        return watchWorkoutService.getByCalendarEvent(userId, eventId)
+                .map(workout -> ResponseEntity.ok(ApiResponse.success(WatchWorkoutResponse.from(workout))))
+                .orElseGet(() -> ResponseEntity.ok(ApiResponse.success(null)));
     }
 
     @Operation(summary = "월간 통계 조회")
