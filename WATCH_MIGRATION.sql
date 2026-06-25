@@ -67,7 +67,9 @@ CREATE INDEX IF NOT EXISTS idx_calendar_events_session
 -- ============================================================
 -- [Phase 1-B] watch_workouts (참고 — 1-B 착수 시 실행, 지금은 미실행)
 -- ============================================================
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- gen_random_uuid()는 PostgreSQL 13+ 코어 내장(운영=PG15) → pgcrypto 불필요.
+-- (구버전 PG에서 함수 없으면 그때만 contrib 설치: CREATE EXTENSION IF NOT EXISTS pgcrypto;)
+-- ⚠️ pgcrypto contrib 미설치 환경에서 CREATE EXTENSION은 ERROR → 운영 PG15에선 이 줄 자체가 불필요.
 
 CREATE TABLE IF NOT EXISTS watch_workouts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
