@@ -70,15 +70,24 @@ public class WatchWorkoutService {
             throw new IllegalArgumentException("본인의 캘린더 이벤트에만 연결할 수 있습니다.");
         }
 
+        CalendarEvent previousCalendarEvent = workout.getCalendarEvent();
+        if (previousCalendarEvent != null && !previousCalendarEvent.getId().equals(calendarEvent.getId())) {
+            clearWatchSummary(previousCalendarEvent);
+        }
         workout.setCalendarEvent(calendarEvent);
         workout.setMatchConfidence(matchConfidence);
         workout.setMatchedManually(true);
+        copyWatchSummaryToCalendar(workout, calendarEvent);
         return watchWorkoutRepository.save(workout);
     }
 
     @Transactional
     public WatchWorkout unlink(String userId, UUID workoutId) {
         WatchWorkout workout = findOwnedWorkout(userId, workoutId);
+        CalendarEvent calendarEvent = workout.getCalendarEvent();
+        if (calendarEvent != null) {
+            clearWatchSummary(calendarEvent);
+        }
         workout.setCalendarEvent(null);
         workout.setMatchConfidence(null);
         workout.setMatchedManually(false);
@@ -108,5 +117,21 @@ public class WatchWorkoutService {
     private User findUser(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+    private void copyWatchSummaryToCalendar(WatchWorkout workout, CalendarEvent calendarEvent) {
+        calendarEvent.setAvgHeartRate(workout.getAvgHeartRate());
+        calendarEvent.setMaxHeartRate(workout.getMaxHeartRate());
+        calendarEvent.setActiveCalories(workout.getActiveCalories());
+        calendarEvent.setAvgPaceSecPer100m(workout.getAvgPaceSecPer100m());
+        calendarEvent.setSwimType(workout.getWorkoutType() != null ? workout.getWorkoutType().name() : null);
+    }
+
+    private void clearWatchSummary(CalendarEvent calendarEvent) {
+        calendarEvent.setAvgHeartRate(null);
+        calendarEvent.setMaxHeartRate(null);
+        calendarEvent.setActiveCalories(null);
+        calendarEvent.setAvgPaceSecPer100m(null);
+        calendarEvent.setSwimType(null);
     }
 }

@@ -83,6 +83,21 @@ public class CalendarEvent extends BaseEntity {
     @Column(name = "notify_1hour_before")
     private Boolean notify1hourBefore = false;
 
+    @Column(name = "avg_heart_rate")
+    private Integer avgHeartRate;
+
+    @Column(name = "max_heart_rate")
+    private Integer maxHeartRate;
+
+    @Column(name = "active_calories")
+    private Integer activeCalories;
+
+    @Column(name = "avg_pace_sec_per_100m")
+    private Double avgPaceSecPer100m;
+
+    @Column(name = "swim_type", length = 30)
+    private String swimType;
+
     // Constructors
     protected CalendarEvent() {
     }
@@ -232,5 +247,45 @@ public class CalendarEvent extends BaseEntity {
 
     public void setDifficulty(String difficulty) {
         this.difficulty = difficulty;
+    }
+
+    public Integer getAvgHeartRate() {
+        return avgHeartRate;
+    }
+
+    public void setAvgHeartRate(Integer avgHeartRate) {
+        this.avgHeartRate = avgHeartRate;
+    }
+
+    public Integer getMaxHeartRate() {
+        return maxHeartRate;
+    }
+
+    public void setMaxHeartRate(Integer maxHeartRate) {
+        this.maxHeartRate = maxHeartRate;
+    }
+
+    public Integer getActiveCalories() {
+        return activeCalories;
+    }
+
+    public void setActiveCalories(Integer activeCalories) {
+        this.activeCalories = activeCalories;
+    }
+
+    public Double getAvgPaceSecPer100m() {
+        return avgPaceSecPer100m;
+    }
+
+    public void setAvgPaceSecPer100m(Double avgPaceSecPer100m) {
+        this.avgPaceSecPer100m = avgPaceSecPer100m;
+    }
+
+    public String getSwimType() {
+        return swimType;
+    }
+
+    public void setSwimType(String swimType) {
+        this.swimType = swimType;
     }
 }

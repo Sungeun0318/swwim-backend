@@ -121,12 +121,12 @@ CREATE INDEX IF NOT EXISTS idx_watch_workouts_user_external
 
 CREATE INDEX IF NOT EXISTS idx_watch_workouts_calendar_event
   ON watch_workouts (calendar_event_id);
--- -- calendar_events 요약 스칼라(1-C 표시용)
--- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS avg_heart_rate INT;
--- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS max_heart_rate INT;
--- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS active_calories INT;
--- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS avg_pace_sec_per_100m DOUBLE PRECISION;
--- ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS swim_type VARCHAR(30);
+-- calendar_events 요약 스칼라(1-C 표시용)
+ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS avg_heart_rate INT;
+ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS max_heart_rate INT;
+ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS active_calories INT;
+ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS avg_pace_sec_per_100m DOUBLE PRECISION;
+ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS swim_type VARCHAR(30);
 
 
 -- ============================================================

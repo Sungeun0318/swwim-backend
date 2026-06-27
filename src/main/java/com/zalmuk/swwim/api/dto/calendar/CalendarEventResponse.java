@@ -36,6 +36,11 @@ public class CalendarEventResponse {
     private Boolean notify1hourBefore;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer avgHeartRate;
+    private Integer maxHeartRate;
+    private Integer activeCalories;
+    private Double avgPaceSecPer100m;
+    private String swimType;
 
     public CalendarEventResponse() {
     }
@@ -62,6 +67,11 @@ public class CalendarEventResponse {
         response.setNotify1hourBefore(event.getNotify1hourBefore());
         response.setCreatedAt(event.getCreatedAt());
         response.setUpdatedAt(event.getUpdatedAt());
+        response.setAvgHeartRate(event.getAvgHeartRate());
+        response.setMaxHeartRate(event.getMaxHeartRate());
+        response.setActiveCalories(event.getActiveCalories());
+        response.setAvgPaceSecPer100m(event.getAvgPaceSecPer100m());
+        response.setSwimType(event.getSwimType());
         return response;
     }
 
@@ -106,4 +116,14 @@ public class CalendarEventResponse {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public Integer getAvgHeartRate() { return avgHeartRate; }
+    public void setAvgHeartRate(Integer avgHeartRate) { this.avgHeartRate = avgHeartRate; }
+    public Integer getMaxHeartRate() { return maxHeartRate; }
+    public void setMaxHeartRate(Integer maxHeartRate) { this.maxHeartRate = maxHeartRate; }
+    public Integer getActiveCalories() { return activeCalories; }
+    public void setActiveCalories(Integer activeCalories) { this.activeCalories = activeCalories; }
+    public Double getAvgPaceSecPer100m() { return avgPaceSecPer100m; }
+    public void setAvgPaceSecPer100m(Double avgPaceSecPer100m) { this.avgPaceSecPer100m = avgPaceSecPer100m; }
+    public String getSwimType() { return swimType; }
+    public void setSwimType(String swimType) { this.swimType = swimType; }
 }
